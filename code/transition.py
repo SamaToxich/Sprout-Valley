@@ -10,7 +10,7 @@ class Transition:
         self.player = player
 
         # overlay image
-        self.image = pygame.Surface((SCREEN_WIDTH,SCREEN_HEIGHT))
+        self.image = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.color = 255
         self.speed = -3
 
@@ -26,7 +26,5 @@ class Transition:
             self.player.sleep = False
             self.speed = -3
 
-        self.image.fill((self.color,self.color,self.color))
-        self.display_surface.blit(self.image, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
-
-
+        self.image.fill((self.color, self.color, self.color))
+        self.display_surface.blit(self.image, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)

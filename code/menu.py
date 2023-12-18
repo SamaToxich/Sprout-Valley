@@ -31,10 +31,10 @@ class Menu:
 
     def display_money(self):
         text_surf = self.font.render(f'${self.player.money}', False, '#b68962')
-        text_rect = text_surf.get_rect(midbottom = (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 20))
+        text_rect = text_surf.get_rect(midbottom=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 20))
 
         pygame.draw.rect(self.display_surface, '#dcb98a', text_rect.inflate(10, 10), 0, 4)
-        self.display_surface.blit(text_surf, (text_rect[0] ,text_rect[1] + 5))
+        self.display_surface.blit(text_surf, (text_rect[0], text_rect[1] + 5))
 
     def setup(self):
         # create text surfaces
@@ -91,7 +91,7 @@ class Menu:
                         self.buy_sell.stop()
                         self.buy_sell.play()
 
-        # clamo the values
+        # clamp the values
         if self.index < 0:
             self.index = len(self.text_surfs) - 1
         if self.index > len(self.text_surfs) - 1:
@@ -100,24 +100,24 @@ class Menu:
     def show_entry(self, text_surf, amount, top, selected):
         # background
         bg_rect = pygame.Rect(self.main_rect.left, top, self.width, text_surf.get_height() + (self.padding * 2))
-        pygame.draw.rect(self.display_surface, 'White',  bg_rect, 0 , 4)
+        pygame.draw.rect(self.display_surface, 'White', bg_rect, 0, 4)
 
         # text
-        text_rect = text_surf.get_rect(midleft = (self.main_rect.left + 20, bg_rect.centery + 3))
+        text_rect = text_surf.get_rect(midleft=(self.main_rect.left + 20, bg_rect.centery + 3))
         self.display_surface.blit(text_surf, text_rect)
 
         # amount
         amount_surf = self.font.render(str(amount), False, 'Black')
-        amount_rect = amount_surf.get_rect(midright = (self.main_rect.right - 20, bg_rect.centery + 4))
+        amount_rect = amount_surf.get_rect(midright=(self.main_rect.right - 20, bg_rect.centery + 4))
         self.display_surface.blit(amount_surf, amount_rect)
 
         # selected
         if selected:
             pygame.draw.rect(self.display_surface, 'black', bg_rect, 4, 4)
-            if self.index <= self.sell_border: # sell
-                pos_rect = self.sell_text.get_rect(midleft = (self.main_rect.left + 180, bg_rect.centery + 3))
+            if self.index <= self.sell_border:  # sell
+                pos_rect = self.sell_text.get_rect(midleft=(self.main_rect.left + 180, bg_rect.centery + 3))
                 self.display_surface.blit(self.sell_text, pos_rect)
-            else: # buy
+            else:  # buy
                 pos_rect = self.buy_text.get_rect(midleft=(self.main_rect.left + 180, bg_rect.centery + 3))
                 self.display_surface.blit(self.buy_text, pos_rect)
 

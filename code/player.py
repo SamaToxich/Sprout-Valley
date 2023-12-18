@@ -1,4 +1,3 @@
-import pygame
 from support import *
 from settings import *
 from timer import Timer
@@ -49,26 +48,26 @@ class Player(pygame.sprite.Sprite):
 
         # inventory
         self.item_inventory = {
-            'wood':     0,
-            'apple':    0,
-            'corn':     0,
-            'tomato':   0,
-            'cabbage':  0,
-            'carrot':   0,
-            'pumpkin':  0,
-            'turnip':   0,
+            'wood': 0,
+            'apple': 0,
+            'corn': 0,
+            'tomato': 0,
+            'cabbage': 0,
+            'carrot': 0,
+            'pumpkin': 0,
+            'turnip': 0,
             'zucchini': 0,
             'cucumber': 0
         }
         self.seed_inventory = {
-            'corn':      5,
-            'tomato':    5,
-            'cabbage':   5,
-            'carrot':    5,
-            'pumpkin':   5,
-            'turnip':    5,
-            'zucchini':  5,
-            'cucumber':  5
+            'corn': 5,
+            'tomato': 5,
+            'cabbage': 5,
+            'carrot': 5,
+            'pumpkin': 5,
+            'turnip': 5,
+            'zucchini': 5,
+            'cucumber': 5
         }
 
         self.money = 200
@@ -133,7 +132,7 @@ class Player(pygame.sprite.Sprite):
     def input(self):
         keys = pygame.key.get_pressed()
 
-        if not self.timers['axe use'].active and not self.sleep and not self.timers['water use'].active and\
+        if not self.timers['axe use'].active and not self.sleep and not self.timers['water use'].active and \
                 not self.timers['hoe use'].active:
             # directions
             if keys[pygame.K_w]:
@@ -283,16 +282,16 @@ class Player(pygame.sprite.Sprite):
             if hasattr(sprite, 'hitbox'):
                 if sprite.hitbox.colliderect(self.hitbox):
                     if direction == 'horizontal':
-                        if self.direction.x > 0: # moving right
+                        if self.direction.x > 0:  # moving right
                             self.hitbox.right = sprite.hitbox.left
-                        if self.direction.x < 0: # moving left
+                        if self.direction.x < 0:  # moving left
                             self.hitbox.left = sprite.hitbox.right
                         self.rect.centerx = self.hitbox.centerx
                         self.pos.x = self.hitbox.centerx
                     if direction == 'vertical':
-                        if self.direction.y > 0: # moving down
+                        if self.direction.y > 0:  # moving down
                             self.hitbox.bottom = sprite.hitbox.top
-                        if self.direction.y < 0: # moving up
+                        if self.direction.y < 0:  # moving up
                             self.hitbox.top = sprite.hitbox.bottom
                         self.rect.centery = self.hitbox.centery
                         self.pos.y = self.hitbox.centery
@@ -319,7 +318,6 @@ class Player(pygame.sprite.Sprite):
         self.get_status()
         self.update_timer()
         self.get_target_pos()
-
 
         self.move(dt)
         self.animate(dt)

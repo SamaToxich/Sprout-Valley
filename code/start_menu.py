@@ -29,7 +29,6 @@ class StartMenu:
         self.switch = pygame.mixer.Sound('../audio/switch.mp3')
         self.switch.set_volume(0.05)
 
-
     def setup(self, option):
         # create text surfaces
         self.text_surfs = []
@@ -175,12 +174,11 @@ class StartMenu:
                         self.current_option = 'options'
                         self.timer.activate()
 
-        # clamo the values
+        # clamp the values
         if self.index < 0:
             self.index = len(self.text_surfs) - 1
         if self.index > len(self.text_surfs) - 1:
             self.index = 0
-
 
     def show_entry(self, text_surf, top, selected):
         # background
@@ -195,7 +193,7 @@ class StartMenu:
         if selected:
             pygame.draw.rect(self.display_surface, 'black', bg_rect, 4, 4)
 
-    def show_entry_volume(self, text_surf, top, selected, cur_item):
+    def show_entry_volume(self, text_surf, top, selected):
         # background
         bg_rect = pygame.Rect(self.main_rect.left, top, self.width, text_surf.get_height() + (self.padding * 2))
         pygame.draw.rect(self.display_surface, 'White', bg_rect, 0, 4)
@@ -211,9 +209,6 @@ class StartMenu:
             level_rect = self.level_surf.get_rect(midright=(self.main_rect.right - 20, bg_rect.centery + 5))
             self.display_surface.blit(self.level_surf, level_rect)
 
-
-
-
     def update(self):
         self.input()
         self.setup(self.current_option)
@@ -221,13 +216,11 @@ class StartMenu:
         if self.current_option == 'volume':
             for text_index, text_surf in enumerate(self.text_surfs):
                 top = self.main_rect.top + text_index * (text_surf.get_height() + (self.padding * 2) + self.space)
-                current_item = self.all_options[self.current_option][self.index]
 
-                self.show_entry_volume(text_surf, top, self.index == text_index ,current_item)
+                self.show_entry_volume(text_surf, top, self.index == text_index)
 
         else:
             for text_index, text_surf in enumerate(self.text_surfs):
                 top = self.main_rect.top + text_index * (text_surf.get_height() + (self.padding * 2) + self.space)
 
                 self.show_entry(text_surf, top, self.index == text_index)
-

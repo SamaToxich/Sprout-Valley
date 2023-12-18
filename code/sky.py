@@ -20,7 +20,7 @@ class Sky:
 
     def display(self):
         self.full_surf.fill(self.stay_color)
-        self.display_surface.blit(self.full_surf, (0,0), special_flags = pygame.BLEND_RGBA_MULT)
+        self.display_surface.blit(self.full_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
 
 
 class Drop(Generic):
@@ -34,8 +34,8 @@ class Drop(Generic):
         self.moving = moving
         if self.moving:
             self.pos = pygame.math.Vector2(self.rect.topleft)
-            self.direction = pygame.math.Vector2(-2,4)
-            self.speed = randint(200,250)
+            self.direction = pygame.math.Vector2(-2, 4)
+            self.speed = randint(200, 250)
 
     def update(self, dt):
         # movement
@@ -61,21 +61,22 @@ class Rain:
 
     def create_floor(self):
         Drop(
-            surf = choice(self.rain_floor),
-            pos = (randint(self.player_pos[0]-1000, self.player_pos[0]+1000), randint(self.player_pos[1]-1000, self.player_pos[1]+1000)),
-            moving = False,
-            groups = self.all_sprites,
-            z = LAYERS['rain floor'])
+            surf=choice(self.rain_floor),
+            pos=(randint(self.player_pos[0] - 1000, self.player_pos[0] + 1000),
+                 randint(self.player_pos[1] - 1000, self.player_pos[1] + 1000)),
+            moving=False,
+            groups=self.all_sprites,
+            z=LAYERS['rain floor'])
 
     def create_drops(self):
         Drop(
-            surf = choice(self.rain_drops),
-            pos = (randint(self.player_pos[0]-1000, self.player_pos[0]+1000), randint(self.player_pos[1]-1000, self.player_pos[1]+1000)),
-            moving = True,
-            groups = self.all_sprites,
-            z = LAYERS['rain drops'])
+            surf=choice(self.rain_drops),
+            pos=(randint(self.player_pos[0] - 1000, self.player_pos[0] + 1000),
+                 randint(self.player_pos[1] - 1000, self.player_pos[1] + 1000)),
+            moving=True,
+            groups=self.all_sprites,
+            z=LAYERS['rain drops'])
 
     def update(self):
         self.create_floor()
         self.create_drops()
-

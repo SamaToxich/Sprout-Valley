@@ -1,4 +1,3 @@
-import pygame
 from pygame.math import Vector2
 
 # screen
@@ -15,9 +14,9 @@ SOUND_VOLUME = {
     'Axe':          0.3,
     'Wave':         0.1,
     'Plant':        0.5,
-    'Success' :     0.1,
-    'Switch tool' : 0.2,
-    'Bye or Sell' : 0.1,
+    'Success':      0.1,
+    'Switch tool':  0.2,
+    'Bye or Sell':  0.1,
     'Rain':         1
 }
 
@@ -53,26 +52,26 @@ ALL_OPTIONS = {
 # overlay positions
 op = 62
 OVERLAY_POSITIONS = {
-    'hp_money_bar': (10, 10),
-    'tool': (50, SCREEN_HEIGHT - 50),
-    'corn': (389, SCREEN_HEIGHT - 60),
-    'tomato': (389 + op * 1, SCREEN_HEIGHT - 60),
-    'cabbage': (389 + op * 2, SCREEN_HEIGHT - 60),
-    'carrot': (389 + op * 3, SCREEN_HEIGHT - 60),
-    'pumpkin': (389 + op * 4, SCREEN_HEIGHT - 60),
-    'turnip': (389 + op * 5, SCREEN_HEIGHT - 60),
-    'zucchini': (389 + op * 6, SCREEN_HEIGHT - 60),
-    'cucumber': (389 + op * 7, SCREEN_HEIGHT - 60),
-    'slot1': (340 + 50, SCREEN_HEIGHT - 59),
-    'slot2': (402 + 50, SCREEN_HEIGHT - 59),
-    'slot3': (464 + 50, SCREEN_HEIGHT - 59),
-    'slot4': (526 + 50, SCREEN_HEIGHT - 59),
-    'slot5': (588 + 50, SCREEN_HEIGHT - 59),
-    'slot6': (650 + 50, SCREEN_HEIGHT - 59),
-    'slot7': (712 + 50, SCREEN_HEIGHT - 59),
-    'slot8': (774 + 50, SCREEN_HEIGHT - 59),
-    'slot9': (836 + 50, SCREEN_HEIGHT - 59),
-    'background' : (SCREEN_WIDTH // 2 - 600 / 2 + 50, SCREEN_HEIGHT - 13)
+    'hp_money_bar':                                             (10, 10),
+    'tool':                                     (50, SCREEN_HEIGHT - 50),
+    'corn':                                    (389, SCREEN_HEIGHT - 60),
+    'tomato':                         (389 + op * 1, SCREEN_HEIGHT - 60),
+    'cabbage':                        (389 + op * 2, SCREEN_HEIGHT - 60),
+    'carrot':                         (389 + op * 3, SCREEN_HEIGHT - 60),
+    'pumpkin':                        (389 + op * 4, SCREEN_HEIGHT - 60),
+    'turnip':                         (389 + op * 5, SCREEN_HEIGHT - 60),
+    'zucchini':                       (389 + op * 6, SCREEN_HEIGHT - 60),
+    'cucumber':                       (389 + op * 7, SCREEN_HEIGHT - 60),
+    'slot1':                              (340 + 50, SCREEN_HEIGHT - 59),
+    'slot2':                              (402 + 50, SCREEN_HEIGHT - 59),
+    'slot3':                              (464 + 50, SCREEN_HEIGHT - 59),
+    'slot4':                              (526 + 50, SCREEN_HEIGHT - 59),
+    'slot5':                              (588 + 50, SCREEN_HEIGHT - 59),
+    'slot6':                              (650 + 50, SCREEN_HEIGHT - 59),
+    'slot7':                              (712 + 50, SCREEN_HEIGHT - 59),
+    'slot8':                              (774 + 50, SCREEN_HEIGHT - 59),
+    'slot9':                              (836 + 50, SCREEN_HEIGHT - 59),
+    'background': (SCREEN_WIDTH // 2 - 600 / 2 + 50, SCREEN_HEIGHT - 13)
 }
 
 PLAYER_TOOL_OFFSET = {
@@ -83,17 +82,17 @@ PLAYER_TOOL_OFFSET = {
 }
 
 LAYERS = {
-    'water': 0,
-    'ground': 1,
-    'soil': 3,
-    'soil water': 2,
-    'rain floor': 4,
-    'house bottom': 5,
-    'ground plant': 6,
-    'main': 7,
-    'house top': 8,
-    'fruit': 9,
-    'rain drops': 10
+    'water':         0,
+    'ground':        1,
+    'soil':          3,
+    'soil water':    2,
+    'rain floor':    4,
+    'house bottom':  5,
+    'ground plant':  6,
+    'main':          7,
+    'house top':     8,
+    'fruit':         9,
+    'rain drops':   10
 }
 
 APPLE_POS = {
@@ -114,13 +113,13 @@ GROW_SPEED = {
 }
 
 SALE_PRICES = {
-    'wood': 4,
-    'apple': 2,
-    'corn': 10,
+    'wood':    4,
+    'apple':   2,
+    'corn':   10,
     'tomato': 20
 }
 PURCHASE_PRICES = {
-    'corn': 4,
+    'corn':   4,
     'tomato': 5
 }
 

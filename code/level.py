@@ -1,4 +1,3 @@
-import pygame
 from menu import Menu
 from support import *
 from settings import *
@@ -88,18 +87,23 @@ class Level:
 
         # Collision tiles
         for x, y, surf in tmx_data.get_layer_by_name('Collision').tiles():
-            Collision('Collision', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+            Collision('Collision', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
+                      self.collision_sprites)
         for x, y, surf in tmx_data.get_layer_by_name('Collision up').tiles():
-            Collision('Collision up', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+            Collision('Collision up', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
+                      self.collision_sprites)
         for x, y, surf in tmx_data.get_layer_by_name('Collision down').tiles():
-            Collision('Collision down', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+            Collision('Collision down', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
+                      self.collision_sprites)
         for x, y, surf in tmx_data.get_layer_by_name('Collision right').tiles():
-            Collision('Collision right', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+            Collision('Collision right', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
+                      self.collision_sprites)
         for x, y, surf in tmx_data.get_layer_by_name('Collision left').tiles():
-            Collision('Collision left', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+            Collision('Collision left', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
+                      self.collision_sprites)
         for x, y, surf in tmx_data.get_layer_by_name('Collision corner').tiles():
-            Collision('Collision corner',( x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
-
+            Collision('Collision corner', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
+                      self.collision_sprites)
 
         # Player
         for obj in tmx_data.get_layer_by_name('Player'):
@@ -128,7 +132,7 @@ class Level:
             z=LAYERS['ground']
         )
 
-    def player_add(self, item, name='Small'):
+    def player_add(self, item):
         self.player.item_inventory[item] += 1
         self.success.play()
 

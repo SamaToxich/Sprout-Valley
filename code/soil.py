@@ -1,4 +1,3 @@
-import pygame
 from support import *
 from settings import *
 from random import choice
