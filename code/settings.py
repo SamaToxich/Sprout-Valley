@@ -76,17 +76,17 @@ OVERLAY_POSITIONS = {
 }
 
 PLAYER_TOOL_OFFSET = {
-    'left': Vector2(-50, 40),
-    'right': Vector2(50, 40),
-    'up': Vector2(0, -10),
+    'left': Vector2(-30, 40),
+    'right': Vector2(30, 40),
+    'up': Vector2(0, 5),
     'down': Vector2(0, 50)
 }
 
 LAYERS = {
     'water': 0,
     'ground': 1,
-    'soil': 2,
-    'soil water': 3,
+    'soil': 3,
+    'soil water': 2,
     'rain floor': 4,
     'house bottom': 5,
     'ground plant': 6,

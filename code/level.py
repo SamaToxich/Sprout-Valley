@@ -10,7 +10,7 @@ from overlay import Overlay
 from start_menu import StartMenu
 from transition import Transition
 from pytmx.util_pygame import load_pygame
-from sprites import Generic, Water, WildFlower, Tree, Interaction, Particle
+from sprites import Generic, Water, WildFlower, Tree, Interaction, Particle, Collision
 
 
 class Level:
@@ -31,7 +31,7 @@ class Level:
 
         # sky
         self.rain = Rain(self.all_sprites)
-        self.raining = randint(0, 10) > 7
+        self.raining = randint(0, 10) > 10
         self.soil_layer.raining = self.raining
         self.sky = Sky()
 
@@ -71,7 +71,6 @@ class Level:
 
         # Water
         water_frames = import_folder('../graphics/water')
-
         for x, y, surf in tmx_data.get_layer_by_name('Water').tiles():
             Water((x * TILE_SIZE, y * TILE_SIZE), water_frames, self.all_sprites)
 
@@ -89,7 +88,18 @@ class Level:
 
         # Collision tiles
         for x, y, surf in tmx_data.get_layer_by_name('Collision').tiles():
-            Generic((x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+            Collision('Collision', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+        for x, y, surf in tmx_data.get_layer_by_name('Collision up').tiles():
+            Collision('Collision up', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+        for x, y, surf in tmx_data.get_layer_by_name('Collision down').tiles():
+            Collision('Collision down', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+        for x, y, surf in tmx_data.get_layer_by_name('Collision right').tiles():
+            Collision('Collision right', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+        for x, y, surf in tmx_data.get_layer_by_name('Collision left').tiles():
+            Collision('Collision left', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+        for x, y, surf in tmx_data.get_layer_by_name('Collision corner').tiles():
+            Collision('Collision corner',( x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)), self.collision_sprites)
+
 
         # Player
         for obj in tmx_data.get_layer_by_name('Player'):
@@ -119,13 +129,7 @@ class Level:
         )
 
     def player_add(self, item, name='Small'):
-        if item == 'wood':
-            if name == 'Small':
-                self.player.item_inventory[item] += 3
-            else:
-                self.player.item_inventory[item] += 5
-        else:
-            self.player.item_inventory[item] += 1
+        self.player.item_inventory[item] += 1
         self.success.play()
 
     def start_game_menu(self):
@@ -173,8 +177,8 @@ class Level:
                     self.soil_layer.grid[plant.rect.centery // TILE_SIZE][plant.rect.centerx // TILE_SIZE].remove('P')
 
     def run(self, dt):
-
         # drawing logic
+        self.display_surface.fill('black')
         self.all_sprites.custom_draw(self.player)
 
         # updates
@@ -182,7 +186,7 @@ class Level:
             self.sky.display()
             self.menu.update()
         elif self.start_menu_active:
-            self.sky.display()  # day time
+            self.sky.display()
             self.start_menu.update()
             self.success.set_volume(SOUND_VOLUME['Success'])
             self.music.set_volume(SOUND_VOLUME['Music'])
@@ -193,11 +197,14 @@ class Level:
             self.plant_collision()
 
         # weather
+        self.overlay.display()
         if self.raining and not self.shop_active and not self.start_menu_active:
             self.rain.update()  # rain
+
         if not self.shop_active and not self.start_menu_active:
+            self.rain.player_pos = [self.player.rect.centerx, self.player.rect.centery]
+            self.sky.display()
             self.sky.update(dt)
-            self.sky.display()  # day time
             self.overlay.display()
 
         # transition overlay
@@ -208,15 +215,12 @@ class Level:
 class CameraGroup(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
-
         self.display_surface = pygame.display.get_surface()
         self.offset = pygame.math.Vector2()
 
-        self.stat_time = pygame.time.get_ticks()
-
     def custom_draw(self, player):
-        self.offset.x = player.rect.centerx - SCREEN_WIDTH // 2
-        self.offset.y = player.rect.centery - SCREEN_HEIGHT // 2
+        self.offset.x = player.rect.centerx - SCREEN_WIDTH / 2
+        self.offset.y = player.rect.centery - SCREEN_HEIGHT / 2
 
         for layer in LAYERS.values():
             for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
@@ -225,5 +229,11 @@ class CameraGroup(pygame.sprite.Group):
                     offset_rect.center -= self.offset
                     self.display_surface.blit(sprite.image, offset_rect)
 
-                    if sprite == player:
-                        target_pos = offset_rect.center + PLAYER_TOOL_OFFSET[player.status.split('_')[0]]
+                # # analytics
+                # if sprite == player:
+                #     pygame.draw.rect(self.display_surface, 'red', offset_rect, 5)
+                #     hitbox_rect = player.hitbox.copy()
+                #     hitbox_rect.center = offset_rect.center
+                #     pygame.draw.rect(self.display_surface, 'green', hitbox_rect, 5)
+                #     target_pos = offset_rect.center + PLAYER_TOOL_OFFSET[player.status.split('_')[0]]
+                #     pygame.draw.circle(self.display_surface, 'blue', target_pos, 5)

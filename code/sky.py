@@ -55,12 +55,14 @@ class Rain:
         self.rain_drops = import_folder('../graphics/rain/drops')
         self.rain_floor = import_folder('../graphics/rain/floor')
 
+        self.player_pos = [1000, 1000]
+
         self.floor_w, self.floor_h = pygame.image.load('../graphics/world/ground.png').get_size()
 
     def create_floor(self):
         Drop(
             surf = choice(self.rain_floor),
-            pos = (randint(0, self.floor_w), randint(0, self.floor_h)),
+            pos = (randint(self.player_pos[0]-1000, self.player_pos[0]+1000), randint(self.player_pos[1]-1000, self.player_pos[1]+1000)),
             moving = False,
             groups = self.all_sprites,
             z = LAYERS['rain floor'])
@@ -68,7 +70,7 @@ class Rain:
     def create_drops(self):
         Drop(
             surf = choice(self.rain_drops),
-            pos = (randint(0, self.floor_w), randint(0, self.floor_h)),
+            pos = (randint(self.player_pos[0]-1000, self.player_pos[0]+1000), randint(self.player_pos[1]-1000, self.player_pos[1]+1000)),
             moving = True,
             groups = self.all_sprites,
             z = LAYERS['rain drops'])

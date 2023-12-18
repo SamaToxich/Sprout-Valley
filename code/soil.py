@@ -6,11 +6,11 @@ from pytmx.util_pygame import load_pygame
 
 
 class SoilTile(pygame.sprite.Sprite):
-    def __init__(self, pos ,surf, groups):
+    def __init__(self, pos, surf, groups):
         super().__init__(groups)
 
         self.image = surf
-        self.rect = self.image.get_rect(topleft = pos)
+        self.rect = self.image.get_rect(topleft=pos)
         self.z = LAYERS['soil']
 
 
@@ -19,7 +19,7 @@ class WaterTile(pygame.sprite.Sprite):
         super().__init__(groups)
 
         self.image = surf
-        self.rect = self.image.get_rect(topleft = pos)
+        self.rect = self.image.get_rect(topleft=pos)
         self.z = LAYERS['soil water']
 
 
@@ -42,7 +42,7 @@ class Plant(pygame.sprite.Sprite):
         # sprite setup
         self.image = self.frames[self.age]
         self.y_offset = -16 if plant_type == 'corn' else -5
-        self.rect = self.image.get_rect(midbottom = self.soil.rect.midbottom + pygame.math.Vector2(0,self.y_offset))
+        self.rect = self.image.get_rect(midbottom=self.soil.rect.midbottom + pygame.math.Vector2(0, self.y_offset))
         self.z = LAYERS['ground plant']
 
     def grow(self):
@@ -58,7 +58,7 @@ class Plant(pygame.sprite.Sprite):
                 self.harvestable = True
 
             self.image = self.frames[int(self.age)]
-            self.rect = self.image.get_rect(midbottom = self.soil.rect.midbottom + pygame.math.Vector2(0,self.y_offset))
+            self.rect = self.image.get_rect(midbottom=self.soil.rect.midbottom + pygame.math.Vector2(0, self.y_offset))
 
 
 class SoilLayer:
@@ -71,7 +71,7 @@ class SoilLayer:
         self.plant_sprites = pygame.sprite.Group()
 
         # graphics
-        self.soil_surfs = import_folder_dict('../graphics/soil/')
+        self.soil_surfs = pygame.image.load('../graphics/soil/x.png').convert_alpha()
         self.water_surfs = import_folder('../graphics/soil_water/')
 
         self.create_soil_grid()
@@ -125,11 +125,13 @@ class SoilLayer:
             if soil_sprites.rect.collidepoint(target_pos):
                 x = soil_sprites.rect.x // TILE_SIZE
                 y = soil_sprites.rect.y // TILE_SIZE
-                self.grid[y][x].append('W')
 
-                WaterTile(pos = soil_sprites.rect.topleft,
-                          surf = choice(self.water_surfs),
-                          groups = [self.all_sprites, self.water_sprites])
+                if 'W' not in self.grid[y][x]:
+                    WaterTile(pos=soil_sprites.rect.topleft,
+                              surf=choice(self.water_surfs),
+                              groups=[self.all_sprites, self.water_sprites])
+
+                self.grid[y][x].append('W')
 
     def water_all(self):
         for index_row, row in enumerate(self.grid):
@@ -137,9 +139,9 @@ class SoilLayer:
                 if 'X' in cell and 'W' not in cell:
                     cell.append('W')
 
-                    WaterTile(pos = (index_col * TILE_SIZE, index_row * TILE_SIZE),
-                              surf = choice(self.water_surfs),
-                              groups = [self.all_sprites, self.water_sprites])
+                    WaterTile(pos=(index_col * TILE_SIZE, index_row * TILE_SIZE),
+                              surf=choice(self.water_surfs),
+                              groups=[self.all_sprites, self.water_sprites])
 
     def remove_water(self):
         # destroy all water sprites
@@ -186,10 +188,10 @@ class SoilLayer:
 
                     seed_inventory[selected_seed] -= 1
 
-                    Plant(plant_type = seed,
-                          groups = [self.all_sprites, self.plant_sprites, self.collision_sprites],
-                          soil = soil_sprite,
-                          check_watered = self.check_watered)
+                    Plant(plant_type=seed,
+                          groups=[self.all_sprites, self.plant_sprites, self.collision_sprites],
+                          soil=soil_sprite,
+                          check_watered=self.check_watered)
 
     def update_plants(self):
         for plant in self.plant_sprites.sprites():
@@ -200,39 +202,6 @@ class SoilLayer:
         for index_row, row in enumerate(self.grid):
             for index_col, cell in enumerate(row):
                 if 'X' in cell:
-                    # tile options
-                    t = 'X' in self.grid[index_row - 1][index_col]
-                    b = 'X' in self.grid[index_row + 1][index_col]
-                    r = 'X' in row[index_col + 1]
-                    l = 'X' in row[index_col - 1]
-
-                    tile_type = 'o'
-
-                    # all sides
-                    if all((t,b,r,l)): tile_type = 'x'
-
-                    # horizontal tiles only
-                    if l and not any((t, r, b)): tile_type = 'r'
-                    if r and not any((t, l, b)): tile_type = 'l'
-                    if r and l and not any((t, b)): tile_type = 'lr'
-
-                    # vertical tiles only
-                    if t and not any((r,l,b)): tile_type = 'b'
-                    if b and not any((r, l, t)): tile_type = 't'
-                    if b and t and not any((r, l)): tile_type = 'tb'
-
-                    # corners
-                    if l and b and not any((t, r)): tile_type = 'tr'
-                    if r and b and not any((t, l)): tile_type = 'tl'
-                    if l and t and not any((b, r)): tile_type = 'br'
-                    if r and t and not any((b, l)): tile_type = 'bl'
-
-                    # T shapes
-                    if all((t, b, r)) and not l: tile_type = 'tbr'
-                    if all((t, b, l)) and not r: tile_type = 'tbl'
-                    if all((l, r, t)) and not b: tile_type = 'lrb'
-                    if all((l, r, b)) and not t: tile_type = 'lrt'
-
-                    SoilTile(pos = (index_col * TILE_SIZE,index_row * TILE_SIZE),
-                             surf = self.soil_surfs[tile_type],
-                             groups = [self.all_sprites, self.soil_sprites])
+                    SoilTile(pos=(index_col * TILE_SIZE, index_row * TILE_SIZE),
+                             surf=self.soil_surfs,
+                             groups=[self.all_sprites, self.soil_sprites])

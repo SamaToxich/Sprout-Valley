@@ -97,7 +97,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.selected_tool == 'axe':
             for tree in self.tree_sprites.sprites():
-                if tree.rect.collidepoint(self.target_pos):
+                if tree.rect.collidepoint(self.target_pos) and tree.alive:
                     tree.damage()
 
         if self.selected_tool == 'water':
@@ -114,6 +114,7 @@ class Player(pygame.sprite.Sprite):
     def import_assets(self):
         self.animations = {'up': [], 'down': [], 'left': [], 'right': [],
                            'right_idle': [], 'left_idle': [], 'up_idle': [], 'down_idle': [],
+                           'right_run': [], 'left_run': [], 'up_run': [], 'down_run': [],
                            'right_hoe': [], 'left_hoe': [], 'up_hoe': [], 'down_hoe': [],
                            'right_axe': [], 'left_axe': [], 'up_axe': [], 'down_axe': [],
                            'right_water': [], 'left_water': [], 'up_water': [], 'down_water': []}
@@ -152,6 +153,19 @@ class Player(pygame.sprite.Sprite):
                 self.direction.x = -1
             else:
                 self.direction.x = 0
+
+            if keys[pygame.K_LSHIFT]:
+                self.speed = 300
+                if keys[pygame.K_d]:
+                    self.status = 'right_run'
+                elif keys[pygame.K_a]:
+                    self.status = 'left_run'
+                elif keys[pygame.K_w]:
+                    self.status = 'up_run'
+                elif keys[pygame.K_s]:
+                    self.status = 'down_run'
+            else:
+                self.speed = 200
 
             # tool use
             if keys[pygame.K_SPACE]:
