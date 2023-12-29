@@ -3,7 +3,7 @@ from settings import *
 from timer import Timer
 
 
-class Menu:
+class Shop:
     def __init__(self, player, toggle_menu):
         # general setup
         self.player = player
@@ -30,7 +30,7 @@ class Menu:
         self.buy_sell.set_volume(SOUND_VOLUME['Bye or Sell'])
 
     def display_money(self):
-        text_surf = self.font.render(f'${self.player.money}', False, '#b68962')
+        text_surf = self.font.render(f'${self.player.money}', True, '#b68962')
         text_rect = text_surf.get_rect(midbottom=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 20))
 
         pygame.draw.rect(self.display_surface, '#dcb98a', text_rect.inflate(10, 10), 0, 4)
@@ -41,7 +41,7 @@ class Menu:
         self.text_surfs = []
         self.total_height = 0
         for item in self.options:
-            text_surf = self.font.render(item, False, 'Black')
+            text_surf = self.font.render(item, True, 'Black')
             self.text_surfs.append(text_surf)
             self.total_height += text_surf.get_height() + (self.padding * 2)
 
@@ -50,8 +50,8 @@ class Menu:
         self.main_rect = pygame.Rect(SCREEN_WIDTH // 2 - self.width // 2, self.menu_top, self.width, self.total_height)
 
         # buy / sell text surface
-        self.buy_text = self.font.render('buy', False, 'Black')
-        self.sell_text = self.font.render('sell', False, 'Black')
+        self.buy_text = self.font.render('buy', True, 'Black')
+        self.sell_text = self.font.render('sell', True, 'Black')
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -107,7 +107,7 @@ class Menu:
         self.display_surface.blit(text_surf, text_rect)
 
         # amount
-        amount_surf = self.font.render(str(amount), False, 'Black')
+        amount_surf = self.font.render(str(amount), True, 'Black')
         amount_rect = amount_surf.get_rect(midright=(self.main_rect.right - 20, bg_rect.centery + 4))
         self.display_surface.blit(amount_surf, amount_rect)
 

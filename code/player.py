@@ -104,11 +104,17 @@ class Player(pygame.sprite.Sprite):
             self.watering.play()
 
     def get_target_pos(self):
-        self.target_pos = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split('_')[0]]
+        if self.selected_tool == 'water':
+            self.target_pos = self.rect.center + PLAYER_WATER_OFFSET[self.status.split('_')[0]]
+        elif self.selected_tool == 'hoe':
+            self.target_pos = self.rect.center + PLAYER_HOE_OFFSET[self.status.split('_')[0]]
+        elif self.selected_tool == 'axe':
+            self.target_pos = self.rect.center + PLAYER_AXE_OFFSET[self.status.split('_')[0]]
 
     def use_seed(self):
+        target_pos = self.rect.center + PLAYER_SEED_OFFSET[self.status.split('_')[0]]
         if self.seed_inventory[self.selected_seed] > 0:
-            self.soil_layer.plant_seed(self.target_pos, self.selected_seed, self.seed_inventory, self.selected_seed)
+            self.soil_layer.plant_seed(target_pos, self.selected_seed, self.seed_inventory, self.selected_seed)
 
     def import_assets(self):
         self.animations = {'up': [], 'down': [], 'left': [], 'right': [],

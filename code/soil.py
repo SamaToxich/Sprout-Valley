@@ -40,7 +40,7 @@ class Plant(pygame.sprite.Sprite):
 
         # sprite setup
         self.image = self.frames[self.age]
-        self.y_offset = -16 if plant_type == 'corn' else -5
+        self.y_offset = -25 if plant_type == 'corn' else -30
         self.rect = self.image.get_rect(midbottom=self.soil.rect.midbottom + pygame.math.Vector2(0, self.y_offset))
         self.z = LAYERS['ground plant']
 
@@ -50,7 +50,7 @@ class Plant(pygame.sprite.Sprite):
 
             if int(self.age) > 0:
                 self.z = LAYERS['main']
-                self.hitbox = self.rect.copy().inflate(-26, - self.rect.height * 0.4)
+                self.hitbox = self.image.get_rect(midbottom=(self.rect.midbottom[0]-1, self.rect.midbottom[1]-27)).inflate(-self.rect.width * 0.3, - self.rect.height * 0.95)
 
             if self.age >= self.max_age:
                 self.age = self.max_age

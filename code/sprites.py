@@ -5,6 +5,7 @@ from random import randint, choice
 
 class Generic(pygame.sprite.Sprite):
     def __init__(self, pos, surf, groups, z=LAYERS['main']):
+
         super().__init__(groups)
 
         self.image = surf
@@ -39,29 +40,6 @@ class Interaction(Generic):
         self.name = name
 
 
-class Water(Generic):
-    def __init__(self, pos, frames, groups):
-        # animation setup
-        self.frames = frames
-        self.frame_index = 0
-
-        # sprite setup
-        super().__init__(pos=pos,
-                         surf=self.frames[self.frame_index],
-                         groups=groups,
-                         z=LAYERS['water'])
-
-    def animate(self, dt):
-        self.frame_index += 5 * dt
-        if self.frame_index >= len(self.frames):
-            self.frame_index = 0
-
-        self.image = self.frames[int(self.frame_index)]
-
-    def update(self, dt):
-        self.animate(dt)
-
-
 class WildFlower(Generic):
     def __init__(self, pos, surf, groups):
         super().__init__(pos, surf, groups)
@@ -93,14 +71,15 @@ class Tree(Generic):
         super().__init__(pos, surf, groups)
 
         # tree attributes
-        self.health = 5 if name == 'Small' else 8
+        self.name = name
+        self.health = 5 if self.name == 'Small' else 8
         self.alive = True
-        stump_path = f'../graphics/stumps/{"small" if name == "Small" else "large"}.png'
+        stump_path = f'../graphics/stumps/{"small" if self.name == "Small" else "large"}.png'
         self.stump_surf = pygame.image.load(stump_path).convert_alpha()
 
         # apples
         self.apple_surf = pygame.image.load('../graphics/fruit/apple.png').convert_alpha()
-        self.apple_pos = APPLE_POS[name]
+        self.apple_pos = APPLE_POS[self.name]
         self.apple_sprites = pygame.sprite.Group()
         self.create_fruit()
 
@@ -136,14 +115,7 @@ class Tree(Generic):
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.hitbox = self.image.get_rect(midbottom=(self.rect.midbottom[0], self.rect.midbottom[1]-26)).inflate(-20, -self.rect.height * 0.99)
             self.alive = False
-            self.player_add('wood')
-
-    def update(self, dt):
-        if self.alive:
-            self.check_death()
-
-        # Change volume
-        self.axe_sound.set_volume(SOUND_VOLUME['Axe'])
+            self.player_add('wood', 5 if self.name == 'Small' else 8)
 
     def create_fruit(self):
         for pos in self.apple_pos:
@@ -155,3 +127,10 @@ class Tree(Generic):
                     surf=self.apple_surf,
                     groups=[self.apple_sprites, self.groups()[0]],
                     z=LAYERS['fruit'])
+
+    def update(self, dt):
+        if self.alive:
+            self.check_death()
+
+        # Change volume
+        self.axe_sound.set_volume(SOUND_VOLUME['Axe'])

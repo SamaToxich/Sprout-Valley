@@ -1,226 +1,313 @@
-import sys
+import os
 import pygame
+import hashlib
 from settings import *
 from timer import Timer
 
 
 class StartMenu:
-    def __init__(self, player, menu):
-        self.player = player
-        self.menu = menu
+    def __init__(self, toggle):
+        self.toggle = toggle
+
+        self.accounts = {}
+        self.authorization_status = ''
+        self.authorization = False
+
+        # display
         self.display_surface = pygame.display.get_surface()
-        self.font = pygame.font.Font('../font/Pixeltype.ttf', 60)
 
-        # options
-        self.width = 400
-        self.space = 10
-        self.padding = 8
+        # timer
+        self.timer_back = Timer(150)
+        self.timer_down = Timer(150)
 
-        # movement
+        # font
+        self.font = pygame.font.Font('../font/Pixeltype.ttf', 50)
+        self.font_enter = pygame.font.Font('../font/Pixeltype.ttf', 40)
+        self.font_error = pygame.font.Font('../font/Pixeltype.ttf', 30)
+        self.font_text = pygame.font.Font('../font/Pixeltype.ttf', 75)
+        self.font_name = pygame.font.Font('../font/Pixeltype.ttf', 110)
+
+        # imports
+        overlay_path = '../graphics/start menu/'
+        self.slot_surf = pygame.image.load(f'{overlay_path}slot.png').convert_alpha()
+        self.select_slot_surf = pygame.image.load(f'{overlay_path}select_slot.png').convert_alpha()
+        self.enter_slot_surf = pygame.image.load(f'{overlay_path}enter_slot.png').convert_alpha()
+        self.select_enter_slot_surf = pygame.image.load(f'{overlay_path}select_enter_slot.png').convert_alpha()
+        self.background_down_surf = pygame.image.load(f'{overlay_path}background_down.png').convert_alpha()
+        self.background_up_surf = pygame.image.load(f'{overlay_path}background_up.png').convert_alpha()
+        self.play_key_surf = pygame.image.load(f'{overlay_path}play_up.png').convert_alpha()
+        self.select_play_key_surf = pygame.image.load(f'{overlay_path}select_play.png').convert_alpha()
+
+        # login and password
+        self.login_active = False
+        self.password_active = False
+
         self.index = 0
-        self.timer = Timer(250)
-
-        # entries
-        self.all_options = ALL_OPTIONS
-        self.current_option = 'options'
-        self.setup(self.current_option)
+        self.login_text = ''
+        self.password_text = ''
+        self.password_text_copy = ''
 
         # sound
         self.switch = pygame.mixer.Sound('../audio/switch.mp3')
         self.switch.set_volume(0.05)
 
-    def setup(self, option):
-        # create text surfaces
-        self.text_surfs = []
-        self.total_height = 0
-        for item in self.all_options[option]:
-            text_surf = self.font.render(item, False, 'Black')
-            self.text_surfs.append(text_surf)
-            self.total_height += text_surf.get_height() + (self.padding * 2)
+        # keys
+        self.keys = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
+                     'z', 'x', 'c', 'v', 'b', 'n', 'm', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'BACKSPACE']
 
-        self.total_height += (len(self.text_surfs) - 1) * self.space
-        self.menu_top = SCREEN_HEIGHT // 2 - self.total_height // 2
-        self.main_rect = pygame.Rect(SCREEN_WIDTH // 2 - self.width // 2, self.menu_top, self.width, self.total_height)
+    def draw_screen(self):
+        if not self.authorization:
+            # draw background
+            background_down_rect = self.background_down_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.display_surface.blit(self.background_down_surf, background_down_rect)
 
-        # volume level
-        if self.current_option == 'volume':
-            current_item = self.all_options[self.current_option][self.index]
-            if len(str(SOUND_VOLUME[current_item])) == 4:
-                if str(SOUND_VOLUME[current_item])[0:2] == '1.':
-                    volume_lev = str(SOUND_VOLUME[current_item])[0] + str(SOUND_VOLUME[current_item])[2]
-                else:
-                    volume_lev = (str(SOUND_VOLUME[current_item]))[-1]
-            if len(str(SOUND_VOLUME[current_item])) == 1:
-                if str(SOUND_VOLUME[current_item]) == '1':
-                    volume_lev = str(SOUND_VOLUME[current_item]) + '0'
-                else:
-                    volume_lev = str(SOUND_VOLUME[current_item])
-            if len(str(SOUND_VOLUME[current_item])) == 3:
-                if str(SOUND_VOLUME[current_item])[0:2] == '1.':
-                    volume_lev = str(SOUND_VOLUME[current_item])[0] + str(SOUND_VOLUME[current_item])[2]
-                else:
-                    volume_lev = (str(SOUND_VOLUME[current_item]))[-1]
-            self.level_surf = self.font.render(volume_lev, False, 'Black')
+            background_up_rect = self.background_up_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.display_surface.blit(self.background_up_surf, background_up_rect)
+
+            # game name
+            name_surf = self.font_name.render("Cat's Farm", True, "White")
+            login_rect = name_surf.get_rect(midtop=(SCREEN_WIDTH // 2, 100))
+            self.display_surface.blit(name_surf, (login_rect[0] + 4, login_rect[1] + 12))
+
+            # login slot
+            self.login_surf = self.slot_surf
+            self.login_rect = self.login_surf.get_rect(midbottom=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 10))
+            self.display_surface.blit(self.login_surf, self.login_rect)
+
+            # password slot
+            self.password_surf = self.slot_surf
+            self.password_rect = self.password_surf.get_rect(midbottom=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 150))
+            self.display_surface.blit(self.password_surf, self.password_rect)
+
+            # select
+            if self.login_active or self.password_active:
+                select_surf = self.select_slot_surf
+                select_rect = self.login_surf.get_rect(midbottom=(SCREEN_WIDTH // 2 - 3, SCREEN_HEIGHT // 2 - 13 + (self.index * 160)))
+                self.display_surface.blit(select_surf, select_rect)
+
+            # text name
+            login_surf = self.font_text.render('Login', True, 'White')
+            login_rect = login_surf.get_rect(midtop=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 155))
+            self.display_surface.blit(login_surf, (login_rect[0], login_rect[1] + 5))
+
+            password_surf = self.font_text.render('Password', True, 'White')
+            password_rect = password_surf.get_rect(midtop=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 5))
+            self.display_surface.blit(password_surf, (password_rect[0], password_rect[1] + 5))
+
+            # login and password text input
+            login_text_surf = self.font.render(self.login_text, True, 'black')
+            login_text_rect = login_text_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 60))
+            self.display_surface.blit(login_text_surf, (login_text_rect[0], login_text_rect[1] + 9))
+
+            password_text_surf = self.font.render(self.password_text, True, 'black')
+            password_text_rect = password_text_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
+            self.display_surface.blit(password_text_surf, (password_text_rect[0], password_text_rect[1] + 9))
+
+            # authorization and registration
+            self.entry_surf = self.enter_slot_surf
+            self.entry_rect = self.entry_surf.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 117))
+            self.display_surface.blit(self.entry_surf, self.entry_rect)
+
+            authorization_text_surf = self.font_enter.render('Enter', True, '#b68962')
+            authorization_text_rect = authorization_text_surf.get_rect(center=(SCREEN_WIDTH // 2 - 95, SCREEN_HEIGHT - 125))
+            self.display_surface.blit(authorization_text_surf, (authorization_text_rect[0], authorization_text_rect[1] + 9))
+
+            self.registration_surf = self.enter_slot_surf
+            self.registration_rect = self.registration_surf.get_rect(center=(SCREEN_WIDTH // 2 + 105, SCREEN_HEIGHT -117))
+            self.display_surface.blit(self.registration_surf, self.registration_rect)
+
+            registration_text_surf = self.font_enter.render('Registration', True, '#b68962')
+            registration_text_rect = registration_text_surf.get_rect(center=(SCREEN_WIDTH // 2 + 108, SCREEN_HEIGHT - 125))
+            self.display_surface.blit(registration_text_surf, (registration_text_rect[0], registration_text_rect[1] + 9))
+
+            # authorization error
+            if self.authorization_status != '':
+                if self.authorization_status == 'invalid':
+                    error_text_surf = self.font_error.render('Invalid username or password', True, '#f24646')
+
+                elif self.authorization_status == 'none':
+                    error_text_surf = self.font_error.render('There is no such account', True, '#f24646')
+
+                elif self.authorization_status == 'true':
+                    error_text_surf = self.font_error.render('Successfully registered!', True, '#d2e077')
+
+                elif self.authorization_status == 'empty':
+                    error_text_surf = self.font_error.render('Fill in the empty fields', True, '#f24646')
+
+                elif self.authorization_status == 'exists':
+                    error_text_surf = self.font_error.render('An account with this username already exists', True,
+                                                             '#f24646')
+
+                error_text_rect = error_text_surf.get_rect(center=(SCREEN_WIDTH // 2 + 3, SCREEN_HEIGHT - 175))
+                self.display_surface.blit(error_text_surf, error_text_rect)
+
+        elif self.authorization:
+            # background
+            background_down_rect = self.background_down_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+            self.display_surface.blit(self.background_down_surf, background_down_rect)
+
+            # play key
+            self.play_key_rect = self.play_key_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 350))
+            self.display_surface.blit(self.play_key_surf, self.play_key_rect)
 
     def input(self):
+        self.timer_back.update()
+        self.timer_down.update()
         keys = pygame.key.get_pressed()
-        self.timer.update()
+        mouse = pygame.mouse.get_pressed()[0]
+        mouse_pos = pygame.mouse.get_pos()
 
-        if not self.timer.active:
-            if keys[pygame.K_w]:
-                self.index -= 1
-                self.switch.play()
-                self.timer.activate()
+        if not self.authorization:
+            if self.entry_rect.collidepoint(mouse_pos):
+                select_enter_slot_rect = self.select_enter_slot_surf.get_rect(center=(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT - 117))
+                self.display_surface.blit(self.select_enter_slot_surf, select_enter_slot_rect)
+            elif self.registration_rect.collidepoint(mouse_pos):
+                select_enter_slot_rect = self.select_enter_slot_surf.get_rect(center=(SCREEN_WIDTH // 2 + 105, SCREEN_HEIGHT - 117))
+                self.display_surface.blit(self.select_enter_slot_surf, select_enter_slot_rect)
+        else:
+            if self.play_key_rect.collidepoint(mouse_pos):
+                select_play_rect = self.select_play_key_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 350))
+                self.display_surface.blit(self.select_play_key_surf, select_play_rect)
 
-            if keys[pygame.K_s]:
-                self.index += 1
-                self.switch.play()
-                self.timer.activate()
+        # mouse click
+        if not self.timer_down.active and not self.timer_back.active:
+            if mouse:
+                if self.login_rect.collidepoint(mouse_pos):
+                    self.login_active = True
+                    self.password_active = False
 
-            if keys[pygame.K_RETURN]:
-                self.timer.activate()
-                self.switch.play()
+                    self.index = 0
 
-                # get item
-                current_item = self.all_options[self.current_option][self.index]
+                elif self.password_rect.collidepoint(mouse_pos):
+                    self.login_active = False
+                    self.password_active = True
 
-                # options
-                if current_item == 'Play':
-                    self.menu()
-                    self.timer.activate()
+                    self.index = 1
 
-                if current_item == 'Exit':
-                    pygame.quit()
-                    sys.exit()
+                if self.authorization:
+                    if self.play_key_rect.collidepoint(mouse_pos):
+                        self.toggle()
 
-                if current_item == 'Back':
-                    if self.current_option == 'volume':
-                        self.current_option = 'in_options'
-                    else:
-                        self.current_option = 'options'
+                if self.entry_rect.collidepoint(mouse_pos):
+                    status = self.check_account()
+                    if status == 'entry':
+                        self.authorization = True
+                    if status == 'empty':
+                        self.authorization_status = 'empty'
+                    if status == 'invalid':
+                        self.authorization_status = 'invalid'
+                    if status == 'none':
+                        self.authorization_status = 'none'
+                    self.timer_back.activate()
 
-                # In options
-                if current_item == 'Options':
-                    self.current_option = 'in_options'
+                elif self.registration_rect.collidepoint(mouse_pos):
+                    status = self.registrate()
+                    if status == 'true':
+                        self.authorization_status = 'true'
+                    if status == 'empty':
+                        self.authorization_status = 'empty'
+                    if status == 'exists':
+                        self.authorization_status = 'exists'
+                    self.timer_back.activate()
 
-                if current_item == 'Volume':
-                    self.current_option = 'volume'
+        # keys down
+        if any(keys):
+            if not self.timer_down.active and not self.timer_back.active:
+                for i in self.keys:
+                    key_backspace = pygame.key.key_code('BACKSPACE')
+                    key_name = pygame.key.key_code(i)
 
-            if keys[pygame.K_a]:
-                self.timer.activate()
-                current_item = self.all_options[self.current_option][self.index]
+                    if self.login_active:
 
-                if self.current_option == 'volume':
-                    self.switch.play()
-                    if current_item == 'Tools':
-                        SOUND_VOLUME['Tools'] -= 0.1
-                        SOUND_VOLUME['Axe'] -= 0.1
-                        SOUND_VOLUME['Water'] -= 0.1
-                        SOUND_VOLUME['Hoe'] -= 0.1
-                    else:
-                        SOUND_VOLUME[current_item] -= 0.1
+                        if keys[key_backspace]:
+                            self.login_text = self.login_text[:-1]
+                            self.timer_back.activate()
+                            break
+                        elif keys[key_name]:
+                            if len(self.login_text) < 14:
+                                self.timer_down.activate()
+                                self.login_text += i
+                                break
 
-                    if len(str(SOUND_VOLUME[current_item])) > 4:
-                        SOUND_VOLUME[current_item] = float(str(SOUND_VOLUME[current_item])[:4])
-                        if str(SOUND_VOLUME[current_item])[-1] != '0' and str(SOUND_VOLUME[current_item])[-1] != '5':
-                            SOUND_VOLUME[current_item] = round(float(str(SOUND_VOLUME[current_item])[:4]), 1)
+                    if self.password_active:
 
-                    if SOUND_VOLUME[current_item] <= 0:
-                        if current_item == 'Tools':
-                            SOUND_VOLUME['Tools'] = SOUND_VOLUME['Axe'] = SOUND_VOLUME['Water'] = SOUND_VOLUME[
-                                'Hoe'] = 0
-                        else:
-                            SOUND_VOLUME[current_item] = 0
+                        if keys[key_backspace]:
+                            self.password_text = self.password_text[:-1]
+                            self.password_text_copy = self.password_text_copy[:-1]
+                            self.timer_back.activate()
+                            break
+                        elif keys[key_name]:
+                            if len(self.password_text) < 14:
+                                self.timer_down.activate()
+                                self.password_text_copy += i
+                                self.password_text += '#'
+                                break
 
-            if keys[pygame.K_d]:
-                self.timer.activate()
-                current_item = self.all_options[self.current_option][self.index]
+    def check_account(self):
+        if len(self.login_text) == 0 or len(self.password_text_copy) == 0:
+            return 'empty'
+        else:
+            password_code = hashlib.sha256(self.password_text_copy.encode()).hexdigest()
+            file = open('../save/accounts.txt', 'r+')
+            a = file.readline()[:-1].split(' ')
 
-                if self.current_option == 'volume':
-                    self.switch.play()
-                    if current_item == 'Tools':
-                        if SOUND_VOLUME['Tools'] == 0:
-                            SOUND_VOLUME['Tools'] += 0.1
-                            SOUND_VOLUME['Axe'] += 0.3
-                            SOUND_VOLUME['Water'] += 0.1
-                            SOUND_VOLUME['Hoe'] += 0.4
-                        else:
-                            SOUND_VOLUME['Tools'] += 0.1
-                            SOUND_VOLUME['Axe'] += 0.1
-                            SOUND_VOLUME['Water'] += 0.1
-                            SOUND_VOLUME['Hoe'] += 0.1
-                    else:
-                        SOUND_VOLUME[current_item] += 0.1
+            while True:
+                if a != ['']:
+                    self.accounts[a[0]] = a[1]
+                    a = file.readline()[:-1].split(' ')
+                else:
+                    break
 
-                    if len(str(SOUND_VOLUME[current_item])) > 4:
-                        SOUND_VOLUME[current_item] = float(str(SOUND_VOLUME[current_item])[:4])
-                        if str(SOUND_VOLUME[current_item])[-1] != '0' and str(SOUND_VOLUME[current_item])[-1] != '5':
-                            SOUND_VOLUME[current_item] = round(float(str(SOUND_VOLUME[current_item])[:4]), 1)
+            true_account = False
+            account_exists = False
+            for i in self.accounts.items():
+                login, password = i
+                if self.login_text == login and password_code == password:
+                    true_account = True
+                    break
+                if self.login_text == login and password_code != password:
+                    account_exists = True
+                    break
 
-                    if SOUND_VOLUME[current_item] >= 1:
-                        if current_item == 'Tools':
-                            SOUND_VOLUME['Tools'] = SOUND_VOLUME['Water'] = 1
-                            SOUND_VOLUME['Axe'] = 1.2
-                            SOUND_VOLUME['Hoe'] = 1.3
-                        else:
-                            SOUND_VOLUME[current_item] = 1
+            if true_account:
+                return 'entry'
+            elif account_exists:
+                return 'invalid'
+            elif not true_account and not account_exists:
+                return 'none'
 
-            if keys[pygame.K_ESCAPE]:
-                if self.current_option != 'options':
-                    if self.current_option == 'volume' or self.current_option == 'hotkeys':
-                        self.current_option = 'in_options'
-                        self.timer.activate()
-                    else:
-                        self.current_option = 'options'
-                        self.timer.activate()
+    def registrate(self):
+        if len(self.login_text) == 0 or len(self.password_text_copy) == 0:
+            return 'empty'
+        else:
+            password_code = hashlib.sha256(self.password_text_copy.encode()).hexdigest()
+            file = open('../save/accounts.txt', 'r+')
+            a = file.readline()[:-1].split(' ')
 
-        # clamp the values
-        if self.index < 0:
-            self.index = len(self.text_surfs) - 1
-        if self.index > len(self.text_surfs) - 1:
-            self.index = 0
+            while True:
+                if a != ['']:
+                    self.accounts[a[0]] = a[1]
+                    a = file.readline()[:-1].split(' ')
+                else:
+                    break
 
-    def show_entry(self, text_surf, top, selected):
-        # background
-        bg_rect = pygame.Rect(self.main_rect.left, top, self.width, text_surf.get_height() + (self.padding * 2))
-        pygame.draw.rect(self.display_surface, 'White', bg_rect, 0, 4)
+            account_exists = False
 
-        # text
-        text_rect = text_surf.get_rect(center=(self.main_rect.centerx, bg_rect.centery + 5))
-        self.display_surface.blit(text_surf, text_rect)
+            for i in self.accounts.items():
+                login, password = i
+                if self.login_text == login:
+                    account_exists = True
+                    print('true')
 
-        # selected
-        if selected:
-            pygame.draw.rect(self.display_surface, 'black', bg_rect, 4, 4)
-
-    def show_entry_volume(self, text_surf, top, selected):
-        # background
-        bg_rect = pygame.Rect(self.main_rect.left, top, self.width, text_surf.get_height() + (self.padding * 2))
-        pygame.draw.rect(self.display_surface, 'White', bg_rect, 0, 4)
-
-        # text
-        text_rect = text_surf.get_rect(midleft=(self.main_rect.left + 20, bg_rect.centery + 5))
-        self.display_surface.blit(text_surf, text_rect)
-
-        # selected
-        if selected:
-            pygame.draw.rect(self.display_surface, 'black', bg_rect, 4, 4)
-
-            level_rect = self.level_surf.get_rect(midright=(self.main_rect.right - 20, bg_rect.centery + 5))
-            self.display_surface.blit(self.level_surf, level_rect)
+            if not account_exists:
+                file = open('../save/accounts.txt', 'r+')
+                file.seek(0, os.SEEK_END)
+                file.write(f'{self.login_text} {password_code}\n')
+                file.close()
+                return 'true'
+            else:
+                return 'exists'
 
     def update(self):
+        self.draw_screen()
         self.input()
-        self.setup(self.current_option)
-
-        if self.current_option == 'volume':
-            for text_index, text_surf in enumerate(self.text_surfs):
-                top = self.main_rect.top + text_index * (text_surf.get_height() + (self.padding * 2) + self.space)
-
-                self.show_entry_volume(text_surf, top, self.index == text_index)
-
-        else:
-            for text_index, text_surf in enumerate(self.text_surfs):
-                top = self.main_rect.top + text_index * (text_surf.get_height() + (self.padding * 2) + self.space)
-
-                self.show_entry(text_surf, top, self.index == text_index)

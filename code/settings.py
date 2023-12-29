@@ -8,23 +8,18 @@ TILE_SIZE = 64
 # volume
 SOUND_VOLUME = {
     'Tools':        0.1,
-    'Music':        0.0,
     'Water':        0.1,
     'Hoe':          0.4,
     'Axe':          0.3,
     'Wave':         0.1,
     'Plant':        0.5,
+    'Affects':      0.1,
     'Success':      0.1,
     'Switch tool':  0.2,
     'Bye or Sell':  0.1,
+    'Music':        0.0,
     'Rain':         1
 }
-
-# ui
-BAR_HEIGHT = 20
-HEALTH_BAR_WIDTH = 200
-ENERGY_BAR_WIDTH = 140
-ITEM_BOX_SIZE = 75
 
 # general colors
 WATER_COLOR = '#71ddee'
@@ -46,7 +41,7 @@ UPGRADE_BG_COLOR_SELECTED = '#EEEEEE'
 ALL_OPTIONS = {
     'options': ['Play', 'Options', 'Exit'],
     'in_options': ['Volume'],
-    'volume': ['Tools', 'Plant', 'Music', 'Success', 'Switch tool', 'Bye or Sell'],
+    'volume': ['Tools', 'Affects', 'Music'],
 }
 
 # overlay positions
@@ -74,12 +69,10 @@ OVERLAY_POSITIONS = {
     'background': (SCREEN_WIDTH // 2 - 600 / 2 + 50, SCREEN_HEIGHT - 13)
 }
 
-PLAYER_TOOL_OFFSET = {
-    'left': Vector2(-30, 40),
-    'right': Vector2(30, 40),
-    'up': Vector2(0, 5),
-    'down': Vector2(0, 50)
-}
+PLAYER_WATER_OFFSET = {'left': Vector2(-90, 40), 'right': Vector2(90, 40), 'up': Vector2(0, -15), 'down': Vector2(0, 70)}
+PLAYER_AXE_OFFSET = {'left': Vector2(-20, 40), 'right': Vector2(20, 40), 'up': Vector2(0, 5), 'down': Vector2(0, 50)}
+PLAYER_HOE_OFFSET = {'left': Vector2(-50, 40), 'right': Vector2(50, 40), 'up': Vector2(0, -5), 'down': Vector2(0, 60)}
+PLAYER_SEED_OFFSET = {'left': Vector2(-10, 40), 'right': Vector2(10, 40), 'up': Vector2(0, -5), 'down': Vector2(0, 40)}
 
 LAYERS = {
     'water':         0,
@@ -101,14 +94,14 @@ APPLE_POS = {
 }
 
 GROW_SPEED = {
-    'corn':     1.2,
+    'corn':     1,
     'tomato':   0.7,
     'cabbage':  0.4,
     'carrot':   1,
-    'pumpkin':  0.3,
+    'pumpkin':  0.2,
     'turnip':   0.8,
     'zucchini': 0.6,
-    'cucumber': 1.2
+    'cucumber': 0.7
 
 }
 

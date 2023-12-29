@@ -8,8 +8,13 @@ class Overlay:
         self.display_surface = pygame.display.get_surface()
         self.player = player
 
+        # time
+        self.clock = pygame.time.get_ticks()
+
         # imports
         self.font = pygame.font.Font('../font/Pixeltype.ttf', 37)
+        self.font_seed = pygame.font.Font('../font/Pixeltype.ttf', 25)
+        self.font_time = pygame.font.Font('../font/Pixeltype.ttf', 40)
         overlay_path = '../graphics/overlay/'
         self.tools_sufr = {tool: pygame.image.load(f'{overlay_path}{tool}.png').convert_alpha() for tool in
                            player.tools}
@@ -19,11 +24,6 @@ class Overlay:
         self.background_surf = pygame.image.load(f'{overlay_path}back.png').convert_alpha()
         self.hp_money_bar = pygame.image.load(f'{overlay_path}hp_money_bar.png').convert_alpha()
         self.select_slot = pygame.image.load(f'{overlay_path}select.png').convert_alpha()
-
-    def selection_box(self, left, top):
-        bg_rect = pygame.Rect(left, top, ITEM_BOX_SIZE, ITEM_BOX_SIZE)
-        pygame.draw.rect(self.display_surface, UI_BG_COLOR, bg_rect)
-        pygame.draw.rect(self.display_surface, UI_BORDER_COLOR, bg_rect, 3)
 
     def display(self):
         # tools
@@ -36,7 +36,7 @@ class Overlay:
         hp_money_bar_rect = self.hp_money_bar.get_rect(topleft=OVERLAY_POSITIONS['hp_money_bar'])
         self.display_surface.blit(self.hp_money_bar, hp_money_bar_rect)
 
-        text_surf = self.font.render(f'{self.player.money}', False, '#b68962')
+        text_surf = self.font.render(f'{self.player.money}', True, '#b68962')
         text_rect = text_surf.get_rect(topleft=(48, 118))
         self.display_surface.blit(text_surf, (text_rect[0], text_rect[1] + 5))
 
@@ -46,17 +46,29 @@ class Overlay:
 
         # slot
         for i in range(9):
-            slot_rect = self.slot_surf.get_rect(center=OVERLAY_POSITIONS[f'slot{i + 1}'])
+            slot_rect = self.slot_surf.get_rect(center=((390 + (i * 62)), SCREEN_HEIGHT - 59))
             self.display_surface.blit(self.slot_surf, slot_rect)
+
+        # select slot
+        select_slot_rect = self.select_slot.get_rect(
+            center=((390 + (self.player.seed_select_index * 62)), SCREEN_HEIGHT - 59))
+        self.display_surface.blit(self.select_slot, select_slot_rect)
 
         # seeds
         for i in range(len(self.seeds_sufr)):
             seed_surf = list(self.seeds_sufr.values())[i]
-            seed_rect = seed_surf.get_rect(center=OVERLAY_POSITIONS[self.player.seeds[i]])
+            seed_rect = seed_surf.get_rect(center=((389 + (62 * i)), SCREEN_HEIGHT - 60))
+
+            text_surf = self.font_seed.render(f'{self.player.seed_inventory[self.player.seeds[i]]}', True, 'black')
+            text_rect = text_surf.get_rect(topleft=(seed_rect.centerx+16, seed_rect.centery+16))
 
             self.display_surface.blit(seed_surf, seed_rect)
+            self.display_surface.blit(text_surf, text_rect)
 
-        # select slot
-        select_slot_rect = self.select_slot.get_rect(
-            center=OVERLAY_POSITIONS[f'slot{self.player.seed_select_index + 1}'])
-        self.display_surface.blit(self.select_slot, select_slot_rect)
+        # time
+        self.clock = pygame.time.get_ticks() // 1000
+        text_surf = self.font_time.render(f'{self.clock//60+6}: {"0" + str(self.clock % 60) if self.clock % 60 < 10 else self.clock - (self.clock//60*60)}', True, '#b68962')
+        text_rect = text_surf.get_rect(topright=(SCREEN_WIDTH-30, 20))
+
+        self.display_surface.blit(text_surf, text_rect)
+

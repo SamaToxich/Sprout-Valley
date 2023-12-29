@@ -1,4 +1,4 @@
-from menu import Menu
+from shop import Shop
 from support import *
 from settings import *
 from sky import Rain, Sky
@@ -6,10 +6,11 @@ from player import Player
 from random import randint
 from soil import SoilLayer
 from overlay import Overlay
+from esc_menu import EscMenu
 from start_menu import StartMenu
 from transition import Transition
 from pytmx.util_pygame import load_pygame
-from sprites import Generic, Water, WildFlower, Tree, Interaction, Particle, Collision
+from sprites import Generic, WildFlower, Tree, Interaction, Particle, Collision
 
 
 class Level:
@@ -34,9 +35,20 @@ class Level:
         self.soil_layer.raining = self.raining
         self.sky = Sky()
 
+        # start menu
+        self.start_menu = StartMenu(self.toggle_start_menu)
+        self.start_menu_active = True
+
+        # esc menu
+        self.esc_menu = EscMenu(self.player, self.toggle_esc_menu)
+        self.esc_menu_active = False
+
         # shop
-        self.menu = Menu(self.player, self.toggle_shop)
+        self.shop_menu = Shop(self.player, self.toggle_shop)
         self.shop_active = False
+
+        # import
+        self.cursor_surf = pygame.image.load(f'../graphics/overlay/cursor.png').convert_alpha()
 
         # music
         self.rain_sound = pygame.mixer.Sound('../audio/rain.mp3')
@@ -46,10 +58,6 @@ class Level:
         self.music = pygame.mixer.Sound('../audio/bg_music2.mp3')
         self.music.set_volume(SOUND_VOLUME['Music'])
         self.music.play(loops=-1)
-
-        # start menu
-        self.start_menu = StartMenu(self.player, self.start_game_menu)
-        self.start_menu_active = False
 
     def setup(self):
         # load map tmx
@@ -67,11 +75,6 @@ class Level:
         # Fence
         for x, y, surf in tmx_data.get_layer_by_name('Fence').tiles():
             Generic((x * TILE_SIZE, y * TILE_SIZE), surf, [self.all_sprites, self.collision_sprites])
-
-        # Water
-        water_frames = import_folder('../graphics/water')
-        for x, y, surf in tmx_data.get_layer_by_name('Water').tiles():
-            Water((x * TILE_SIZE, y * TILE_SIZE), water_frames, self.all_sprites)
 
         # Trees
         for obj in tmx_data.get_layer_by_name('Trees'):
@@ -116,7 +119,7 @@ class Level:
                     interaction=self.interaction_sprites,
                     soil_layer=self.soil_layer,
                     toggle_shop=self.toggle_shop,
-                    start_menu=self.start_game_menu)
+                    start_menu=self.toggle_esc_menu)
 
             if obj.name == 'Bed':
                 Interaction((obj.x, obj.y), (obj.width, obj.height), self.interaction_sprites, obj.name)
@@ -132,15 +135,18 @@ class Level:
             z=LAYERS['ground']
         )
 
-    def player_add(self, item):
-        self.player.item_inventory[item] += 1
+    def player_add(self, item, cnt=1):
+        self.player.item_inventory[item] += cnt
         self.success.play()
 
-    def start_game_menu(self):
-        self.start_menu_active = not self.start_menu_active
+    def toggle_esc_menu(self):
+        self.esc_menu_active = not self.esc_menu_active
 
     def toggle_shop(self):
         self.shop_active = not self.shop_active
+
+    def toggle_start_menu(self):
+        self.start_menu_active = not self.start_menu_active
 
     def reset(self):
         # plants
@@ -184,36 +190,45 @@ class Level:
         # drawing logic
         self.display_surface.fill('black')
         self.all_sprites.custom_draw(self.player)
+        self.sky.display()
 
         # updates
-        if self.shop_active:
-            self.sky.display()
-            self.menu.update()
-        elif self.start_menu_active:
-            self.sky.display()
+        if self.start_menu_active:
             self.start_menu.update()
+
+        elif self.shop_active:
+            self.shop_menu.update()
+
+        elif self.esc_menu_active:
+            self.esc_menu.update()
+
             self.success.set_volume(SOUND_VOLUME['Success'])
             self.music.set_volume(SOUND_VOLUME['Music'])
             self.soil_layer.hoe_sound.set_volume(SOUND_VOLUME['Hoe'])
             self.soil_layer.plant_sound.set_volume(SOUND_VOLUME['Plant'])
+
         else:
+            # sprites
             self.all_sprites.update(dt)
             self.plant_collision()
 
-        # weather
-        self.overlay.display()
-        if self.raining and not self.shop_active and not self.start_menu_active:
-            self.rain.update()  # rain
-
-        if not self.shop_active and not self.start_menu_active:
-            self.rain.player_pos = [self.player.rect.centerx, self.player.rect.centery]
-            self.sky.display()
+            # weather
             self.sky.update(dt)
+
+            if self.raining:
+                self.rain.update()  # rain
+            self.rain.player_pos = [self.player.rect.centerx, self.player.rect.centery]
+
+            # overlay
             self.overlay.display()
 
-        # transition overlay
-        if self.player.sleep:
-            self.transition.play()
+            # transition overlay
+            if self.player.sleep:
+                self.transition.play()
+
+        # mouse
+        pygame.mouse.set_visible(False)
+        self.display_surface.blit(self.cursor_surf, (pygame.mouse.get_pos()))
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -232,12 +247,3 @@ class CameraGroup(pygame.sprite.Group):
                     offset_rect = sprite.rect.copy()
                     offset_rect.center -= self.offset
                     self.display_surface.blit(sprite.image, offset_rect)
-
-                # # analytics
-                # if sprite == player:
-                #     pygame.draw.rect(self.display_surface, 'red', offset_rect, 5)
-                #     hitbox_rect = player.hitbox.copy()
-                #     hitbox_rect.center = offset_rect.center
-                #     pygame.draw.rect(self.display_surface, 'green', hitbox_rect, 5)
-                #     target_pos = offset_rect.center + PLAYER_TOOL_OFFSET[player.status.split('_')[0]]
-                #     pygame.draw.circle(self.display_surface, 'blue', target_pos, 5)
