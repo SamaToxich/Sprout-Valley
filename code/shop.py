@@ -9,7 +9,13 @@ class Shop:
         self.player = player
         self.toggle_menu = toggle_menu
         self.display_surface = pygame.display.get_surface()
-        self.font = pygame.font.Font('../font/Pixeltype.ttf', 50)
+        self.font = pygame.font.Font('../font/Pixeltype.ttf', 55)
+
+        # import
+        self.inventory_surf = pygame.image.load(f'../graphics/overlay/inventory_back.png').convert_alpha()
+        self.shop_surf = pygame.image.load(f'../graphics/overlay/shop_back.png').convert_alpha()
+        self.select_surf = pygame.image.load(f'../graphics/overlay/select.png').convert_alpha()
+        self.back_text_surf = pygame.image.load(f'../graphics/overlay/back_text.png').convert_alpha()
 
         # options
         self.width = 400
@@ -17,9 +23,8 @@ class Shop:
         self.padding = 8
 
         # entries
-        self.options = list(self.player.item_inventory.keys()) + list(self.player.seed_inventory.keys())
-        self.sell_border = len(self.player.item_inventory) - 1
-        self.setup()
+        self.seed = list(self.player.seed_inventory.keys())
+        self.inventory = list(self.player.item_inventory.keys())
 
         # movement
         self.index = 0
@@ -36,101 +41,95 @@ class Shop:
         pygame.draw.rect(self.display_surface, '#dcb98a', text_rect.inflate(10, 10), 0, 4)
         self.display_surface.blit(text_surf, (text_rect[0], text_rect[1] + 5))
 
-    def setup(self):
-        # create text surfaces
-        self.text_surfs = []
-        self.total_height = 0
-        for item in self.options:
-            text_surf = self.font.render(item, True, 'Black')
-            self.text_surfs.append(text_surf)
-            self.total_height += text_surf.get_height() + (self.padding * 2)
-
-        self.total_height += (len(self.text_surfs) - 1) * self.space
-        self.menu_top = SCREEN_HEIGHT // 2 - self.total_height // 2
-        self.main_rect = pygame.Rect(SCREEN_WIDTH // 2 - self.width // 2, self.menu_top, self.width, self.total_height)
-
-        # buy / sell text surface
-        self.buy_text = self.font.render('buy', True, 'Black')
-        self.sell_text = self.font.render('sell', True, 'Black')
-
     def input(self):
         keys = pygame.key.get_pressed()
+        mouse = pygame.mouse.get_pressed()[0]
+        mouse_pos = pygame.mouse.get_pos()
         self.timer.update()
 
-        if not self.timer.active:
-            if keys[pygame.K_w]:
-                self.index -= 1
-                self.timer.activate()
+        if self.shop_rect.collidepoint(mouse_pos):
+            for i in range(4):
+                for j in range(5):
+                    start_pos_x = 60
+                    start_pos_y = 204
+                    if start_pos_x + 70 * i + 12 * i <= mouse_pos[0] <= start_pos_x + 70 * (i + 1) + 12 * i and\
+                            start_pos_y + 70 * j + 12 * j <= mouse_pos[1] <= start_pos_y + 70 * (j + 1) + 12 * j:
+                        select_rect = self.select_surf.get_rect(topleft=(start_pos_x + 70 * i + 12 * i, start_pos_y + 70 * j + 12 * j))
+                        self.display_surface.blit(self.select_surf, select_rect)
 
-            if keys[pygame.K_s]:
-                self.index += 1
-                self.timer.activate()
+                        # index seed
+                        if j < 2:
+                            self.index_shop = i + j * 4
+                        else:
+                            self.index_shop = 'none'
 
-            if keys[pygame.K_BACKSPACE]:
-                self.player.toggle_shop()
+                        # buy
+                        if keys[pygame.K_SPACE] and self.index_shop != 'none' and not self.timer.active:
+                            if  self.player.money > PURCHASE_PRICES[self.seed[self.index_shop]]:
+                                self.player.money -= PURCHASE_PRICES[self.seed[self.index_shop]]
+                                self.player.seed_inventory[self.seed[self.index_shop]] += 1
+                                self.buy_sell.play()
+                                self.timer.activate()
+        else:
+            self.index_shop = 'none'
 
-            if keys[pygame.K_SPACE]:
-                self.timer.activate()
+        if self.inventory_rect.collidepoint(mouse_pos):
+            for i in range(4):
+                for j in range(5):
+                    start_pos_x = SCREEN_WIDTH - 381
+                    start_pos_y = 204
+                    if start_pos_x + 70 * i + 12 * i <= mouse_pos[0] <= start_pos_x + 70 * (i + 1) + 12 * i and\
+                            start_pos_y + 70 * j + 12 * j <= mouse_pos[1] <= start_pos_y + 70 * (j + 1) + 12 * j:
+                        select_rect = self.select_surf.get_rect(topleft=(start_pos_x + 70 * i + 12 * i, start_pos_y + 70 * j + 12 * j))
+                        self.display_surface.blit(self.select_surf, select_rect)
 
-                # get item
-                current_item = self.options[self.index]
+                        # index inventory
+                        if j < 2:
+                            self.index_inventory = i + j * 4
+                        elif j == 2 and i < 2:
+                            self.index_inventory = i + j * 4
+                        else:
+                            self.index_inventory = 'none'
 
-                # sell
-                if self.index <= self.sell_border:
-                    if self.player.item_inventory[current_item] > 0:
-                        self.player.item_inventory[current_item] -= 1
-                        self.player.money += SALE_PRICES[current_item]
-                        self.buy_sell.stop()
-                        self.buy_sell.play()
+                        # sell
+                        if keys[pygame.K_SPACE] and self.index_shop != 'none' and not self.timer.active:
+                            if self.player.item_inventory[self.inventory[self.index_inventory]] > 0:
+                                self.player.money += SALE_PRICES[self.inventory[self.index_inventory]]
+                                self.player.item_inventory[self.inventory[self.index_inventory]] -= 1
+                                self.buy_sell.play()
+                                self.timer.activate()
+        else:
+            self.index_inventory = 'none'
 
-                # buy
-                else:
-                    if self.player.money > PURCHASE_PRICES[current_item]:
-                        self.player.seed_inventory[current_item] += 1
-                        self.player.money -= PURCHASE_PRICES[current_item]
-                        self.buy_sell.stop()
-                        self.buy_sell.play()
+        if keys[pygame.K_BACKSPACE]:
+            self.player.toggle_shop()
 
-        # clamp the values
-        if self.index < 0:
-            self.index = len(self.text_surfs) - 1
-        if self.index > len(self.text_surfs) - 1:
-            self.index = 0
-
-    def show_entry(self, text_surf, amount, top, selected):
+    def draw_back(self):
         # background
-        bg_rect = pygame.Rect(self.main_rect.left, top, self.width, text_surf.get_height() + (self.padding * 2))
-        pygame.draw.rect(self.display_surface, 'White', bg_rect, 0, 4)
+        self.shop_rect = self.shop_surf.get_rect(midleft=(30, SCREEN_HEIGHT // 2 + 45))
+        self.display_surface.blit(self.shop_surf, self.shop_rect)
+
+        self.inventory_rect = self.inventory_surf.get_rect(midright=(SCREEN_WIDTH - 30, SCREEN_HEIGHT // 2 + 45))
+        self.display_surface.blit(self.inventory_surf, self.inventory_rect)
+
+        back_text_left_rect = self.back_text_surf.get_rect(topleft=(125, 110))
+        self.display_surface.blit(self.back_text_surf, back_text_left_rect)
+
+        back_text_right_rect = self.back_text_surf.get_rect(topright=(SCREEN_WIDTH - 125, 110))
+        self.display_surface.blit(self.back_text_surf, back_text_right_rect)
 
         # text
-        text_rect = text_surf.get_rect(midleft=(self.main_rect.left + 20, bg_rect.centery + 3))
-        self.display_surface.blit(text_surf, text_rect)
+        buy_surf = self.font.render("Buy", True, "#b68962")
+        buy_rect = buy_surf.get_rect(topleft=(190, 122))
+        self.display_surface.blit(buy_surf, buy_rect)
 
-        # amount
-        amount_surf = self.font.render(str(amount), True, 'Black')
-        amount_rect = amount_surf.get_rect(midright=(self.main_rect.right - 20, bg_rect.centery + 4))
-        self.display_surface.blit(amount_surf, amount_rect)
-
-        # selected
-        if selected:
-            pygame.draw.rect(self.display_surface, 'black', bg_rect, 4, 4)
-            if self.index <= self.sell_border:  # sell
-                pos_rect = self.sell_text.get_rect(midleft=(self.main_rect.left + 180, bg_rect.centery + 3))
-                self.display_surface.blit(self.sell_text, pos_rect)
-            else:  # buy
-                pos_rect = self.buy_text.get_rect(midleft=(self.main_rect.left + 180, bg_rect.centery + 3))
-                self.display_surface.blit(self.buy_text, pos_rect)
+        sell_surf = self.font.render("Sell", True, "#b68962")
+        sell_rect = sell_surf.get_rect(topright=(SCREEN_WIDTH - 190, 122))
+        self.display_surface.blit(sell_surf, sell_rect)
 
     def update(self):
+        self.draw_back()
         self.input()
         self.display_money()
-
-        for text_index, text_surf in enumerate(self.text_surfs):
-            top = self.main_rect.top + text_index * (text_surf.get_height() + (self.padding * 2) + self.space)
-
-            amount_list = list(self.player.item_inventory.values()) + list(self.player.seed_inventory.values())
-            amount = amount_list[text_index]
-
-            self.show_entry(text_surf, amount, top, self.index == text_index)
 
         self.buy_sell.set_volume(SOUND_VOLUME['Bye or Sell'])

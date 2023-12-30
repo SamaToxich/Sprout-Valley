@@ -17,9 +17,6 @@ class EscMenu:
         self.slot_surf = pygame.image.load(f'../graphics/overlay/slot_menu.png').convert_alpha()
         self.select_slot_surf = pygame.image.load(f'../graphics/overlay/select_slot_menu.png').convert_alpha()
 
-        # self.background_surf = pygame.image.load(f'../graphics/overlay/setting_clear.png').convert_alpha()
-        # self.background_rect = self.background_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
-
         self.background_setting_surf = pygame.image.load(f'../graphics/overlay/setting.png').convert_alpha()
         self.background_setting_rect = self.background_setting_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
 

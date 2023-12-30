@@ -1,3 +1,4 @@
+import os
 from support import *
 from settings import *
 from timer import Timer
@@ -47,30 +48,10 @@ class Player(pygame.sprite.Sprite):
         self.selected_seed = self.seeds[self.seed_index]
 
         # inventory
-        self.item_inventory = {
-            'wood': 0,
-            'apple': 0,
-            'corn': 0,
-            'tomato': 0,
-            'cabbage': 0,
-            'carrot': 0,
-            'pumpkin': 0,
-            'turnip': 0,
-            'zucchini': 0,
-            'cucumber': 0
-        }
-        self.seed_inventory = {
-            'corn': 5,
-            'tomato': 5,
-            'cabbage': 5,
-            'carrot': 5,
-            'pumpkin': 5,
-            'turnip': 5,
-            'zucchini': 5,
-            'cucumber': 5
-        }
+        self.item_inventory = item_inventory
+        self.seed_inventory = seed_inventory
 
-        self.money = 200
+        self.money = MONEY
 
         # interaction
         self.tree_sprites = tree_sprites
@@ -89,6 +70,28 @@ class Player(pygame.sprite.Sprite):
         self.wave.set_volume(SOUND_VOLUME['Wave'])
         self.choice = pygame.mixer.Sound('../audio/switch.mp3')
         self.choice.set_volume(0.05)
+
+    def saves(self):
+        file = open('../save/save.txt', 'r+')
+        file.truncate(0)
+
+        # money
+        file.seek(0, os.SEEK_END)
+        file.write(f'money {self.money}\n')
+
+        # inventory
+        for i in self.item_inventory.items():
+            item, cnt = i
+            file.seek(0, os.SEEK_END)
+            file.write(f'{item} {cnt}\n')
+
+        # seed
+        for i in self.seed_inventory.items():
+            seed, cnt = i
+            file.seek(0, os.SEEK_END)
+            file.write(f'{seed} {cnt}\n')
+
+        file.close()
 
     def use_tool(self):
         if self.selected_tool == 'hoe':

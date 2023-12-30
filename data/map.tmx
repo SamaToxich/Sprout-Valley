@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="75" height="66" tilewidth="64" tileheight="64" infinite="0" nextlayerid="27" nextobjectid="5390">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="75" height="66" tilewidth="64" tileheight="64" infinite="0" nextlayerid="27" nextobjectid="5392">
  <tileset firstgid="1" source="Tilesets/Objects.tsx"/>
  <tileset firstgid="20" source="Tilesets/interaction.tsx"/>
  <tileset firstgid="22" source="Tilesets/Water.tsx"/>
@@ -1118,13 +1118,13 @@
   <object id="5367" gid="19" x="3045.03" y="1595.88" width="96" height="80"/>
   <object id="5368" gid="19" x="3658.36" y="1198.54" width="96" height="80"/>
   <object id="5369" gid="19" x="3133.03" y="2497.21" width="96" height="80"/>
-  <object id="5389" gid="2" x="3332.67" y="2048" width="56" height="68"/>
+  <object id="5391" gid="2" x="3332.67" y="2045.33" width="56" height="68"/>
  </objectgroup>
  <objectgroup id="12" name="Player">
   <object id="253" name="Start" x="1375.63" y="1125.6">
    <point/>
   </object>
-  <object id="254" name="Trader" x="3267.06" y="1979.55" width="192" height="131.333"/>
+  <object id="254" name="Trader" x="3264.82" y="1983.67" width="192" height="131.333"/>
   <object id="256" name="Bed" x="1344.31" y="1086.6" width="63.6667" height="66.3333"/>
  </objectgroup>
  <objectgroup id="7" name="Objects">

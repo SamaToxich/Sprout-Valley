@@ -57,16 +57,6 @@ OVERLAY_POSITIONS = {
     'turnip':                         (389 + op * 5, SCREEN_HEIGHT - 60),
     'zucchini':                       (389 + op * 6, SCREEN_HEIGHT - 60),
     'cucumber':                       (389 + op * 7, SCREEN_HEIGHT - 60),
-    'slot1':                              (340 + 50, SCREEN_HEIGHT - 59),
-    'slot2':                              (402 + 50, SCREEN_HEIGHT - 59),
-    'slot3':                              (464 + 50, SCREEN_HEIGHT - 59),
-    'slot4':                              (526 + 50, SCREEN_HEIGHT - 59),
-    'slot5':                              (588 + 50, SCREEN_HEIGHT - 59),
-    'slot6':                              (650 + 50, SCREEN_HEIGHT - 59),
-    'slot7':                              (712 + 50, SCREEN_HEIGHT - 59),
-    'slot8':                              (774 + 50, SCREEN_HEIGHT - 59),
-    'slot9':                              (836 + 50, SCREEN_HEIGHT - 59),
-    'background': (SCREEN_WIDTH // 2 - 600 / 2 + 50, SCREEN_HEIGHT - 13)
 }
 
 PLAYER_WATER_OFFSET = {'left': Vector2(-90, 40), 'right': Vector2(90, 40), 'up': Vector2(0, -15), 'down': Vector2(0, 70)}
@@ -106,21 +96,50 @@ GROW_SPEED = {
 }
 
 SALE_PRICES = {
-    'wood':    4,
+    'corn':     7,
+    'tomato':   10,
+    'cabbage':  25,
+    'carrot':   7,
+    'pumpkin':  40,
+    'turnip':   9,
+    'zucchini': 13,
+    'cucumber': 10,
+    'wood':    3,
     'apple':   2,
-    'corn':   10,
-    'tomato': 20
 }
+
 PURCHASE_PRICES = {
-    'corn':   4,
-    'tomato': 5
+    'corn':     4,
+    'tomato':   5,
+    'cabbage':  12,
+    'carrot':   4,
+    'pumpkin':  15,
+    'turnip':   3,
+    'zucchini': 5,
+    'cucumber': 5,
 }
+
+item_inventory = {}
+
+seed_inventory = {}
+
+MONEY = 0
 
 GRID = []
 
-# KEYS = {
-# 	'plant' : pygame.KEYDOWN[pygame.K_TAB]
-# }
-#
-# def set_key():
-#
+file = open('../save/save.txt', 'r+')
+a = file.readline()[:-1].split(' ')
+cnt = 0
+
+while True:
+    if a != ['']:
+        cnt += 1
+        if cnt == 1:
+            MONEY = int(a[1])
+        elif cnt < 12:
+            item_inventory[a[0]] = int(a[1])
+        else:
+            seed_inventory[a[0]] = int(a[1])
+        a = file.readline()[:-1].split(' ')
+    else:
+        break
