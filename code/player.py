@@ -1,7 +1,8 @@
-import os
+from resourse import sound_list
 from support import *
 from settings import *
 from timer import Timer
+from resourse import *
 
 
 class Player(pygame.sprite.Sprite):
@@ -67,38 +68,11 @@ class Player(pygame.sprite.Sprite):
         self.start_menu = start_menu
 
         # sound
-        self.axe_sound = pygame.mixer.Sound('../audio/axe.mp3')
-        self.axe_sound.set_volume(SOUND_VOLUME['Axe'])
-        self.switch = pygame.mixer.Sound('../audio/switch_tool1.mp3')
-        self.switch.set_volume(SOUND_VOLUME['Switch tool'])
-        self.watering = pygame.mixer.Sound('../audio/water.mp3')
-        self.watering.set_volume(SOUND_VOLUME['Water'])
-        self.wave = pygame.mixer.Sound('../audio/Wave.mp3')
-        self.wave.set_volume(SOUND_VOLUME['Wave'])
-        self.choice = pygame.mixer.Sound('../audio/switch.mp3')
-        self.choice.set_volume(0.05)
-
-    def saves(self):
-        file = open('../save/save.txt', 'r+')
-        file.truncate(0)
-
-        # money
-        file.seek(0, os.SEEK_END)
-        file.write(f'money {self.money}\n')
-
-        # inventory
-        for i in self.item_inventory.items():
-            item, cnt = i
-            file.seek(0, os.SEEK_END)
-            file.write(f'{item} {cnt}\n')
-
-        # seed
-        for i in self.seed_inventory.items():
-            seed, cnt = i
-            file.seek(0, os.SEEK_END)
-            file.write(f'{seed} {cnt}\n')
-
-        file.close()
+        self.axe_sound = sound_list['Axe']
+        self.switch = sound_list['Switch tool']
+        self.watering = sound_list['Water']
+        self.wave = sound_list['Wave']
+        self.choice = sound_list['Choice']
 
     def use_tool(self):
         if self.selected_tool == 'hoe':

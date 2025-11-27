@@ -3,6 +3,7 @@ import pygame
 import hashlib
 from settings import *
 from timer import Timer
+from resourse import *
 
 
 class StartMenu:
@@ -21,22 +22,21 @@ class StartMenu:
         self.timer_down = Timer(150)
 
         # font
-        self.font = pygame.font.Font('../font/Pixeltype.ttf', 50)
-        self.font_enter = pygame.font.Font('../font/Pixeltype.ttf', 40)
-        self.font_error = pygame.font.Font('../font/Pixeltype.ttf', 30)
-        self.font_text = pygame.font.Font('../font/Pixeltype.ttf', 75)
-        self.font_name = pygame.font.Font('../font/Pixeltype.ttf', 110)
+        self.font = font_list['font_50']
+        self.font_enter = font_list['font_40']
+        self.font_error = font_list['font_30']
+        self.font_text = font_list['font_75']
+        self.font_name = font_list['font_110']
 
         # imports
-        overlay_path = '../graphics/start menu/'
-        self.slot_surf = pygame.image.load(f'{overlay_path}slot.png').convert_alpha()
-        self.select_slot_surf = pygame.image.load(f'{overlay_path}select_slot.png').convert_alpha()
-        self.enter_slot_surf = pygame.image.load(f'{overlay_path}enter_slot.png').convert_alpha()
-        self.select_enter_slot_surf = pygame.image.load(f'{overlay_path}select_enter_slot.png').convert_alpha()
-        self.background_down_surf = pygame.image.load(f'{overlay_path}background_down.png').convert_alpha()
-        self.background_up_surf = pygame.image.load(f'{overlay_path}background_up.png').convert_alpha()
-        self.play_key_surf = pygame.image.load(f'{overlay_path}play_up.png').convert_alpha()
-        self.select_play_key_surf = pygame.image.load(f'{overlay_path}select_play.png').convert_alpha()
+        self.slot_surf = sprite_list['slot_surf']
+        self.select_slot_surf = sprite_list['select_slot']
+        self.enter_slot_surf = sprite_list['enter_slot']
+        self.select_enter_slot_surf = sprite_list['select_enter_slot']
+        self.background_down_surf = sprite_list['background_down']
+        self.background_up_surf = sprite_list['background_up']
+        self.play_key_surf = sprite_list['play_key']
+        self.select_play_key_surf = sprite_list['select_play_key']
 
         # login and password
         self.login_active = False
@@ -48,8 +48,7 @@ class StartMenu:
         self.password_text_copy = ''
 
         # sound
-        self.switch = pygame.mixer.Sound('../audio/switch.mp3')
-        self.switch.set_volume(0.05)
+        self.switch = sound_list['Choice']
 
         # keys
         self.keys = ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',

@@ -1,4 +1,4 @@
-money 171
+money 231
 corn 0
 tomato 0
 cabbage 0
@@ -7,9 +7,9 @@ pumpkin 0
 turnip 0
 zucchini 0
 cucumber 0
-wood 0
-apple 0
-corn 6
+wood 20
+apple 3
+corn 5
 tomato 6
 cabbage 1
 carrot 1

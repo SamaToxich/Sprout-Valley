@@ -20,7 +20,6 @@ class Transition:
             self.speed *= -1
             self.color = 0
             self.reset()
-            self.player.saves()
 
         if self.color > 255:
             self.color = 255

@@ -10,15 +10,26 @@ class Sky:
         self.display_surface = pygame.display.get_surface()
         self.full_surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.start_color = [255, 255, 255]
-        self.end_color = (38, 101, 189)
+        self.now_color = [255, 255, 255]
+        self.end_color = [38, 101, 189]
+        self.day_flag = True
 
     def update(self, dt):
-        for index, value in enumerate(self.end_color):
-            if self.start_color[index] > value:
-                self.start_color[index] -= 0.1 * dt
+        if self.day_flag:
+            cnt_color = 0
+            for index, value in enumerate(self.end_color):
+                if self.now_color[index] > value and self.day_flag:
+                    if self.now_color[2] < 190:
+                        self.now_color[index] -= 0.5 * dt
+                    else:
+                        self.now_color[index] -= 0.1 * dt
+                if self.now_color[2] < 190 and self.now_color[1] < 102 and self.now_color[0] < 39:
+                    self.day_flag = False
+                    break
+
 
     def display(self):
-        self.full_surf.fill(self.start_color)
+        self.full_surf.fill(self.now_color)
         self.display_surface.blit(self.full_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
 
 

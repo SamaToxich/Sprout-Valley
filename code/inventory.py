@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 from timer import Timer
+from resourse import *
 
 
 class Inventory:
@@ -8,9 +9,9 @@ class Inventory:
         self.player = player
         self.toggle_inventory = toggle_inventory
         self.display_surface = pygame.display.get_surface()
-        self.font = pygame.font.Font('../font/Pixeltype.ttf', 50)
-        self.small_font = pygame.font.Font('../font/Pixeltype.ttf', 35)
-        self.item_font = pygame.font.Font('../font/Pixeltype.ttf', 30)
+        self.font = font_list['font_50']
+        self.small_font = font_list['font_35']
+        self.item_font = font_list['font_30']
 
         # Создаем элементы инвентаря программно
         self.create_inventory_elements()

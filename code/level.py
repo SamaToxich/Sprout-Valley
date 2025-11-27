@@ -1,3 +1,4 @@
+from resourse import *
 from timer import Timer
 from shop import Shop
 from support import *
@@ -5,12 +6,13 @@ from settings import *
 from sky import Rain, Sky
 from player import Player
 from random import randint
-from soil import SoilLayer
+from soil import SoilLayer, Plant
 from overlay import Overlay
 from esc_menu import EscMenu
 from inventory import Inventory
 from start_menu import StartMenu
 from transition import Transition
+from save_system import SaveSystem
 from pytmx.util_pygame import load_pygame
 from sprites import Generic, WildFlower, Tree, Interaction, Particle, Collision
 
@@ -28,9 +30,15 @@ class Level:
         self.interaction_sprites = pygame.sprite.Group()
 
         self.soil_layer = SoilLayer(self.all_sprites, self.collision_sprites)
+
+        # Система сохранения
+        self.save_system = SaveSystem()
         self.setup()
         self.overlay = Overlay(self.player)
         self.transition = Transition(self.reset, self.player)
+
+        # Day tracking system
+        self.current_day = 1
 
         # Инвентарь
         self.inventory = Inventory(self.player, self.toggle_inventory)
@@ -56,16 +64,105 @@ class Level:
         self.shop_active = False
 
         # import
-        self.cursor_surf = pygame.image.load(f'../graphics/overlay/cursor.png').convert_alpha()
+        self.cursor_surf = sprite_list['cursor']
 
         # music
-        self.rain_sound = pygame.mixer.Sound('../audio/rain.mp3')
-        self.rain_sound.set_volume(SOUND_VOLUME['Rain'])
-        self.success = pygame.mixer.Sound('../audio/success3.mp3')
-        self.success.set_volume(SOUND_VOLUME['Success'])
-        self.music = pygame.mixer.Sound('../audio/bg_music2.mp3')
-        self.music.set_volume(SOUND_VOLUME['Music'])
+        self.rain_sound = sound_list['Rain']
+        self.success = sound_list['Success']
+        self.music = sound_list['Music']
         self.music.play(loops=-1)
+
+        # Загрузка сохранения
+        self.load_game()
+
+    def load_game(self):
+        """Загружает сохранение игры"""
+        save_data = self.save_system.load_game()
+        if save_data:
+            # Загрузка данных игрока
+            player_data = save_data['player']
+            self.player.money = player_data['money']
+            self.player.item_inventory = player_data['item_inventory']
+            self.player.seed_inventory = player_data['seed_inventory']
+            self.player.selected_tool = player_data['selected_tool']
+            self.player.selected_seed = player_data['selected_seed']
+            self.player.tool_index = player_data['tool_index']
+            self.player.seed_index = player_data['seed_index']
+            self.player.seed_select_index = player_data['seed_select_index']
+
+            # Загрузка данных уровня
+            level_data = save_data['level']
+            self.current_day = level_data['current_day']
+            self.raining = level_data['raining']
+            self.soil_layer.raining = self.raining
+
+            # Включаем звук дождя если нужно
+            if self.raining:
+                self.rain_sound.play(loops=-1)
+
+            # Загрузка почвы
+            soil_data = save_data['soil_layer']
+            self.soil_layer.grid = soil_data['grid']
+            self.soil_layer.create_soil_tiles()
+            self.soil_layer.restore_water_tiles()
+
+            # Загрузка растений
+            for plant_data in soil_data['plants']:
+                soil_pos = plant_data['soil_position']
+                # Находим соответствующий soil_tile
+                for soil_tile in self.soil_layer.soil_sprites.sprites():
+                    if soil_tile.rect.x == soil_pos[0] and soil_tile.rect.y == soil_pos[1]:
+                        try:
+                            plant = Plant(
+                                plant_type=plant_data['plant_type'],
+                                groups=[self.all_sprites, self.soil_layer.plant_sprites, self.collision_sprites],
+                                soil=soil_tile,
+                                check_watered=self.soil_layer.check_watered
+                            )
+                            # Сразу устанавливаем возраст и обновляем изображение
+                            plant.age = plant_data['age']
+                            plant.harvestable = plant_data['harvestable']
+                            self.soil_layer.update_plants(True)
+                        except Exception as e:
+                            print(f"Error loading plant {plant_data['plant_type']}: {e}")
+                            # Удаляем растение из сетки при ошибке
+                            x = soil_tile.rect.x // TILE_SIZE
+                            y = soil_tile.rect.y // TILE_SIZE
+                            if 'P' in self.soil_layer.grid[y][x]:
+                                self.soil_layer.grid[y][x].remove('P')
+                        break
+
+            # Загрузка деревьев
+            """Загружает данные деревьев из сохранения по ID"""
+            trees_data = save_data['trees']
+            for tree_data in trees_data:
+                tree_id = tree_data['tree_id']
+
+                # Ищем дерево по ID
+                for tree in self.tree_sprites.sprites():
+                    if tree_id == tree.tree_id:
+                        # Применяем сохранённые данные
+                        tree.health = tree_data['health']
+                        tree.alive = tree_data['alive']
+                        tree.days_since_cut = tree_data['days_since_cut']
+
+                        # Визуально обновляем дерево в соответствии с его состоянием
+                        tree.check_death()
+                        break
+
+            # Загрузка неба
+            sky_data = save_data['sky']
+            self.sky.now_color = sky_data['now_color']
+            self.sky.day_flag = sky_data['day_flag']
+
+            # Загрузка громкости аудио
+            volume_data = save_data['audio']
+            SOUND_VOLUME = volume_data
+            all_sound_volume(SOUND_VOLUME)
+
+    def save_game(self):
+        """Сохраняет игру"""
+        self.save_system.save_game(self, self.player, self.soil_layer, self.overlay, self.sky, SOUND_VOLUME)
 
     def setup(self):
         # load map tmx
@@ -86,7 +183,7 @@ class Level:
 
         # Trees
         for obj in tmx_data.get_layer_by_name('Trees'):
-            Tree(pos=(obj.x, obj.y),
+            tree = Tree(pos=(obj.x, obj.y),
                  surf=obj.image,
                  groups=[self.all_sprites, self.collision_sprites, self.tree_sprites],
                  name=obj.name,
@@ -123,6 +220,15 @@ class Level:
 
         # Ground
         Generic(pos=(0, 0),surf=pygame.image.load('../graphics/world/ground.png').convert_alpha(),groups=self.all_sprites,z=LAYERS['ground'])
+
+        # После создания всех деревьев, инициализируем систему дней
+        self.update_tree_days()
+
+    def update_tree_days(self):
+        """Обновляет счетчики дней для всех деревьев"""
+        for tree in self.tree_sprites.sprites():
+            if hasattr(tree, 'increment_day'):
+                tree.increment_day()
 
     def player_add(self, item, cnt=1):
         self.player.item_inventory[item] += cnt
@@ -167,7 +273,19 @@ class Level:
                 tree.create_fruit()
 
         # sky
-        self.sky.start_color = [255, 255, 255]
+        self.sky.now_color = [255, 255, 255]
+
+        # reset_time
+        self.overlay.reset_time()
+
+        # Отсчёт дней до воскрешения дерева
+        self.update_tree_days()
+
+        # Отсчёт дней
+        self.current_day += 1
+
+        # Сохранение игры после сна
+        self.save_game()
 
     def plant_collision(self):
         if self.soil_layer.plant_sprites:
@@ -237,8 +355,8 @@ class CameraGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
     def custom_draw(self, player):
-        self.offset.x = player.rect.centerx - SCREEN_WIDTH / 2
-        self.offset.y = player.rect.centery - SCREEN_HEIGHT / 2
+        self.offset.x = player.rect.centerx - SCREEN_WIDTH // 2
+        self.offset.y = player.rect.centery - SCREEN_HEIGHT // 2
 
         for layer in LAYERS.values():
             for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):

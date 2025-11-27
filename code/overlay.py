@@ -1,4 +1,5 @@
 import pygame
+from resourse import *
 from settings import *
 
 
@@ -8,25 +9,27 @@ class Overlay:
         self.display_surface = pygame.display.get_surface()
         self.player = player
 
-        # time
-        self.clock = pygame.time.get_ticks()
+        # time - храним игровое время отдельно
+        self.game_start_time = pygame.time.get_ticks()
+        self.game_time_offset = 0  # смещение времени для сброса
+        self.last_update_time = pygame.time.get_ticks()
 
         # imports
-        self.font = pygame.font.Font('../font/Pixeltype.ttf', 55)
-        self.font_seed = pygame.font.Font('../font/Pixeltype.ttf', 25)
-        self.font_time = pygame.font.Font('../font/Pixeltype.ttf', 40)
-        overlay_path = '../graphics/overlay/'
-        self.tools_sufr = {tool: pygame.image.load(f'{overlay_path}{tool}.png').convert_alpha() for tool in
-                           player.tools}
-        self.seeds_sufr = {seed: pygame.image.load(f'{overlay_path}{seed}.png').convert_alpha() for seed in
-                           player.seeds}
-        self.slot_surf = pygame.image.load(f'{overlay_path}slot.png').convert_alpha()
-        self.background_surf = pygame.image.load(f'{overlay_path}back.png').convert_alpha()
-        self.hp_money_bar = pygame.image.load(f'{overlay_path}hp_money_bar.png').convert_alpha()
-        self.select_slot = pygame.image.load(f'{overlay_path}select.png').convert_alpha()
+        self.font = font_list['font_55']
+        self.font_seed = font_list['font_25']
+        self.font_time = font_list['font_40']
+        self.tools_sufr = {tool: tool_sprite  for tool in player.tools for tool_name, tool_sprite in sprite_list.items() if tool == tool_name}
+        self.seeds_sufr = {seed: seed_sprite for seed in player.seeds for seed_name, seed_sprite in sprite_list.items() if seed == seed_name}
+        self.slot_surf = sprite_list['slot']
+        self.background_surf = sprite_list['back']
+        self.hp_money_bar = sprite_list['hp_money_bar']
+        self.select_slot = sprite_list['select']
 
         # Создаем элементы времени программно
         self.create_time_elements()
+
+        # Устанавливаем время на 6
+        self.reset_time()
 
     def create_time_elements(self):
         # Создаем фон для времени
@@ -128,23 +131,23 @@ class Overlay:
         self.display_surface.blit(text_surf, text_rect)
 
         # background
-        back_rect = self.slot_surf.get_rect(midbottom=(SCREEN_WIDTH // 2 - 337, SCREEN_HEIGHT - 93))
+        back_rect = self.background_surf.get_rect(midbottom=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 10))
         self.display_surface.blit(self.background_surf, back_rect)
 
         # slot
         for i in range(8):
-            slot_rect = self.slot_surf.get_rect(center=((340 + (i * 76)), SCREEN_HEIGHT - 88))
+            slot_rect = self.slot_surf.get_rect(center=((SCREEN_WIDTH // 2 - 67 * 4 + (i * 76)), SCREEN_HEIGHT - 84))
             self.display_surface.blit(self.slot_surf, slot_rect)
 
         # select slot
         select_slot_rect = self.select_slot.get_rect(
-            center=((340 + (self.player.seed_select_index * 76)), SCREEN_HEIGHT - 88))
+            center=((SCREEN_WIDTH // 2 - 67 * 4 + (self.player.seed_select_index * 76)), SCREEN_HEIGHT - 84))
         self.display_surface.blit(self.select_slot, select_slot_rect)
 
         # seeds
         for i in range(len(self.seeds_sufr)):
             seed_surf = list(self.seeds_sufr.values())[i]
-            seed_rect = seed_surf.get_rect(center=((340 + (76 * i)), SCREEN_HEIGHT - 88))
+            seed_rect = seed_surf.get_rect(center=((SCREEN_WIDTH // 2 - 67 * 4 + (76 * i)), SCREEN_HEIGHT - 84))
 
             text_surf = self.font_seed.render(f'{self.player.seed_inventory[self.player.seeds[i]]}', True, 'black')
             text_rect = text_surf.get_rect(topleft=(seed_rect.centerx + 16, seed_rect.centery + 16))
@@ -152,14 +155,13 @@ class Overlay:
             self.display_surface.blit(seed_surf, seed_rect)
             self.display_surface.blit(text_surf, text_rect)
 
-        # Время - улучшенное отображение
+        # Время
         self.display_time()
 
     def display_time(self):
+
         # Получаем игровое время
-        self.clock = pygame.time.get_ticks() // 1000
-        game_hours = (self.clock // 60) + 6  # Начинаем с 6 утра
-        game_minutes = self.clock % 60
+        game_hours, game_minutes = self.get_game_time()
 
         # Определяем время суток для иконки и цвета
         if 6 <= game_hours < 10:
@@ -179,9 +181,6 @@ class Overlay:
             time_color = '#4169E1'  # синий для ночи
             bg_color = (25, 25, 112, 150)  # темно-синий
 
-        # Ограничиваем часы до 24-часового формата
-        game_hours = game_hours % 24
-
         # Форматируем время
         time_text = f'{game_hours}:{"0" + str(game_minutes) if game_minutes < 10 else game_minutes}'
 
@@ -196,7 +195,7 @@ class Overlay:
 
         # Отображаем иконку времени суток
         time_icon = self.time_icons[time_of_day]
-        time_icon_rect = time_icon.get_rect(midleft=(time_bg_rect.left + 10, time_bg_rect.centery-2))
+        time_icon_rect = time_icon.get_rect(midleft=(time_bg_rect.left + 10, time_bg_rect.centery))
         self.display_surface.blit(time_icon, time_icon_rect)
 
         # Отображаем текст времени
@@ -214,3 +213,26 @@ class Overlay:
         day_surf = self.font_seed.render(day_names[time_of_day], True, time_color)
         day_rect = day_surf.get_rect(midtop=(time_bg_rect.centerx, time_bg_rect.bottom + 5))
         self.display_surface.blit(day_surf, day_rect)
+
+    def reset_time(self):
+        """Сбрасывает время на 6:00"""
+        current_time = pygame.time.get_ticks()
+        # Устанавливаем смещение так, чтобы текущее время стало 6:00
+        # 6 часов = 6 * 60 * 60 = 21600 секунд игрового времени
+        self.time_offset = current_time - (21600 * 1000)  # преобразуем в миллисекунды
+        self.last_update_time = current_time
+
+    def get_game_time(self):
+        """Возвращает текущее игровое время в часах и минутах"""
+        # Используем реальное время с начала игры, но сбрасываем смещение при сне
+        current_time = pygame.time.get_ticks()
+        game_seconds = (current_time - self.time_offset) // 1000
+
+        # Имитируем 24-часовой цикл (1 реальная секунда = 1 игровая минута)
+        total_minutes = game_seconds
+        game_hours = (total_minutes // 60) % 24 + 8
+        if game_hours > 24:
+            game_hours = game_hours % 24
+        game_minutes = total_minutes % 60
+
+        return game_hours, game_minutes

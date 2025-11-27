@@ -1,4 +1,5 @@
 import pygame
+from resourse import *
 from settings import *
 from timer import Timer
 
@@ -9,14 +10,14 @@ class Shop:
         self.player = player
         self.toggle_menu = toggle_menu
         self.display_surface = pygame.display.get_surface()
-        self.font = pygame.font.Font('../font/Pixeltype.ttf', 55)
-        self.count_font = pygame.font.Font('../font/Pixeltype.ttf', 40)
+        self.font = font_list['font_55']
+        self.count_font = font_list['font_40']
 
         # import
-        self.inventory_surf = pygame.image.load(f'../graphics/overlay/inventory_back.png').convert_alpha()
-        self.shop_surf = pygame.image.load(f'../graphics/overlay/shop_back.png').convert_alpha()
-        self.select_surf = pygame.image.load(f'../graphics/overlay/select.png').convert_alpha()
-        self.back_text_surf = pygame.image.load(f'../graphics/overlay/back_text.png').convert_alpha()
+        self.inventory_surf = sprite_list['inventory_back']
+        self.shop_surf = sprite_list['shop_back']
+        self.select_surf = sprite_list['select']
+        self.back_text_surf = sprite_list['back_text']
 
         # options
         self.width = 400
@@ -32,8 +33,7 @@ class Shop:
         self.timer = Timer(200)
 
         # sound
-        self.buy_sell = pygame.mixer.Sound('../audio/buy or sell.mp3')
-        self.buy_sell.set_volume(SOUND_VOLUME['Bye or Sell'])
+        self.buy_sell = sound_list['Bye or Sell']
 
     def display_money(self):
         text_surf = self.font.render(f'${self.player.money}', True, '#b68962')
@@ -54,7 +54,7 @@ class Shop:
             for i in range(4):
                 for j in range(5):
                     start_pos_x = 60
-                    start_pos_y = 204
+                    start_pos_y = SCREEN_HEIGHT // 2.81
                     if start_pos_x + 70 * i + 12 * i <= mouse_pos[0] <= start_pos_x + 70 * (i + 1) + 12 * i and\
                             start_pos_y + 70 * j + 12 * j <= mouse_pos[1] <= start_pos_y + 70 * (j + 1) + 12 * j:
 
@@ -88,7 +88,7 @@ class Shop:
             for i in range(4):
                 for j in range(5):
                     start_pos_x = SCREEN_WIDTH - 381
-                    start_pos_y = 204
+                    start_pos_y = SCREEN_HEIGHT // 2.81
                     if start_pos_x + 70 * i + 12 * i <= mouse_pos[0] <= start_pos_x + 70 * (i + 1) + 12 * i and\
                             start_pos_y + 70 * j + 12 * j <= mouse_pos[1] <= start_pos_y + 70 * (j + 1) + 12 * j:
 
@@ -141,19 +141,19 @@ class Shop:
         self.inventory_rect = self.inventory_surf.get_rect(midright=(SCREEN_WIDTH - 30, SCREEN_HEIGHT // 2 + 45))
         self.display_surface.blit(self.inventory_surf, self.inventory_rect)
 
-        back_text_left_rect = self.back_text_surf.get_rect(topleft=(125, 110))
+        back_text_left_rect = self.back_text_surf.get_rect(topleft=(125, SCREEN_HEIGHT // 2 - self.inventory_rect.height // 1.8))
         self.display_surface.blit(self.back_text_surf, back_text_left_rect)
 
-        back_text_right_rect = self.back_text_surf.get_rect(topright=(SCREEN_WIDTH - 125, 110))
+        back_text_right_rect = self.back_text_surf.get_rect(topright=(SCREEN_WIDTH - 125, SCREEN_HEIGHT // 2 - self.inventory_rect.height // 1.8))
         self.display_surface.blit(self.back_text_surf, back_text_right_rect)
 
         # text
         buy_surf = self.font.render("Buy", True, "#b68962")
-        buy_rect = buy_surf.get_rect(topleft=(190, 122))
+        buy_rect = buy_surf.get_rect(topleft=(190, SCREEN_HEIGHT // 2 - self.inventory_rect.height // 1.8 + 10))
         self.display_surface.blit(buy_surf, buy_rect)
 
         sell_surf = self.font.render("Sell", True, "#b68962")
-        sell_rect = sell_surf.get_rect(topright=(SCREEN_WIDTH - 190, 122))
+        sell_rect = sell_surf.get_rect(topright=(SCREEN_WIDTH - 190, SCREEN_HEIGHT // 2 - self.inventory_rect.height // 1.8 + 10))
         self.display_surface.blit(sell_surf, sell_rect)
 
     def display_item_count(self):
@@ -169,9 +169,9 @@ class Shop:
 
             # Позиция в правом нижнем углу
             if self.current_item_type == 'seed':
-                count_rect = count_surf.get_rect(bottomleft=(20, SCREEN_HEIGHT - 30))
+                count_rect = count_surf.get_rect(bottomleft=(40, SCREEN_HEIGHT - 30))
             else:
-                count_rect = count_surf.get_rect(bottomright=(SCREEN_WIDTH - 20, SCREEN_HEIGHT - 30))
+                count_rect = count_surf.get_rect(bottomright=(SCREEN_WIDTH - 40, SCREEN_HEIGHT - 30))
 
             # Создаем фон для текста
             bg_rect = count_rect.inflate(20, 10)

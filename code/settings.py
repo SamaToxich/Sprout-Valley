@@ -1,12 +1,13 @@
 from pygame.math import Vector2
 
 # screen
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
 TILE_SIZE = 64
 
-# volume
+# volume - теперь загружается из сохранения
 SOUND_VOLUME = {
+    'Choice':       0.03,
     'Tools':        0.1,
     'Water':        0.1,
     'Hoe':          0.4,
@@ -40,7 +41,7 @@ UPGRADE_BG_COLOR_SELECTED = '#EEEEEE'
 
 ALL_OPTIONS = {
     'options': ['Play', 'Options', 'Exit'],
-    'in_options': ['Volume'],
+    'in_options': ['Volume', 'Input', 'Op'],
     'volume': ['Tools', 'Affects', 'Music'],
 }
 
@@ -92,7 +93,6 @@ GROW_SPEED = {
     'turnip':   0.8,
     'zucchini': 0.6,
     'cucumber': 0.7
-
 }
 
 SALE_PRICES = {
@@ -121,27 +121,29 @@ PURCHASE_PRICES = {
 
 collision_list = ['Collision', 'Collision up', 'Collision down', 'Collision left', 'Collision right', 'Collision corner']
 
-item_inventory = {}
+# Инициализация пустых инвентарей
+item_inventory = {
+    'corn': 0,
+    'tomato': 0,
+    'cabbage': 0,
+    'carrot': 0,
+    'pumpkin': 0,
+    'turnip': 0,
+    'zucchini': 0,
+    'cucumber': 0,
+    'wood': 0,
+    'apple': 0,
+}
 
-seed_inventory = {}
+seed_inventory = {
+    'corn': 0,
+    'tomato': 0,
+    'cabbage': 0,
+    'carrot': 0,
+    'pumpkin': 0,
+    'turnip': 0,
+    'zucchini': 0,
+    'cucumber': 0
+}
 
 MONEY = 0
-
-GRID = []
-
-file = open('../save/save.txt', 'r+')
-a = file.readline()[:-1].split(' ')
-cnt = 0
-
-while True:
-    if a != ['']:
-        cnt += 1
-        if cnt == 1:
-            MONEY = int(a[1])
-        elif cnt < 12:
-            item_inventory[a[0]] = int(a[1])
-        else:
-            seed_inventory[a[0]] = int(a[1])
-        a = file.readline()[:-1].split(' ')
-    else:
-        break
