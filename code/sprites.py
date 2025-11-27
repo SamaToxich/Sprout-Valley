@@ -70,6 +70,8 @@ class Tree(Generic):
     def __init__(self, pos, surf, groups, name, player_add):
         super().__init__(pos, surf, groups)
 
+        self.all_sprites = groups[0]
+
         # tree attributes
         self.name = name
         self.health = 5 if self.name == 'Small' else 8
@@ -85,32 +87,29 @@ class Tree(Generic):
 
         self.player_add = player_add
 
-        # sound
-        self.axe_sound = pygame.mixer.Sound('../audio/axe.mp3')
-        self.axe_sound.set_volume(SOUND_VOLUME['Axe'])
-
     def damage(self):
-        # damaging the tree
-        self.health -= 1
-
-        # play sound
         if self.alive:
-            self.axe_sound.play()
+            # damaging the tree
+            self.health -= 1
 
-        # remove apple
-        if len(self.apple_sprites.sprites()) > 0:
-            random_apple = choice(self.apple_sprites.sprites())
-            Particle(
-                pos=random_apple.rect.topleft,
-                surf=random_apple.image,
-                groups=self.groups()[0],
-                z=LAYERS['fruit'])
-            self.player_add('apple')
-            random_apple.kill()
+            # remove apple
+            if len(self.apple_sprites.sprites()) > 0:
+                random_apple = choice(self.apple_sprites.sprites())
+                Particle(
+                    pos=random_apple.rect.topleft,
+                    surf=random_apple.image,
+                    groups=self.all_sprites,
+                    z=LAYERS['fruit'])
+                self.player_add('apple')
+                random_apple.kill()
 
     def check_death(self):
         if self.health <= 0:
-            Particle(self.rect.topleft, self.image, self.groups()[0], LAYERS['fruit'], 300)
+            Particle(self.rect.topleft,
+                     self.image,
+                     self.all_sprites,
+                     LAYERS['fruit'],
+                     300)
             self.image = self.stump_surf
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.hitbox = self.image.get_rect(midbottom=(self.rect.midbottom[0], self.rect.midbottom[1]-26)).inflate(-20, -self.rect.height * 0.99)
@@ -125,12 +124,9 @@ class Tree(Generic):
                 Generic(
                     pos=(x, y),
                     surf=self.apple_surf,
-                    groups=[self.apple_sprites, self.groups()[0]],
+                    groups=[self.apple_sprites, self.all_sprites],
                     z=LAYERS['fruit'])
 
     def update(self, dt):
         if self.alive:
             self.check_death()
-
-        # Change volume
-        self.axe_sound.set_volume(SOUND_VOLUME['Axe'])

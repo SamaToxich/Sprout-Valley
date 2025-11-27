@@ -258,6 +258,7 @@ class EscMenu:
                         self.current_option = 'options'
                         self.timer.activate()
 
+
         # clamp the values
         if self.index < 0:
             self.index = len(self.text_surfs) - 1

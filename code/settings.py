@@ -119,6 +119,8 @@ PURCHASE_PRICES = {
     'cucumber': 5,
 }
 
+collision_list = ['Collision', 'Collision up', 'Collision down', 'Collision left', 'Collision right', 'Collision corner']
+
 item_inventory = {}
 
 seed_inventory = {}

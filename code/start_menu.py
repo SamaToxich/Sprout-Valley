@@ -135,8 +135,7 @@ class StartMenu:
                     error_text_surf = self.font_error.render('Fill in the empty fields', True, '#f24646')
 
                 elif self.authorization_status == 'exists':
-                    error_text_surf = self.font_error.render('An account with this username already exists', True,
-                                                             '#f24646')
+                    error_text_surf = self.font_error.render('An account with this username already exists', True,'#f24646')
 
                 error_text_rect = error_text_surf.get_rect(center=(SCREEN_WIDTH // 2 + 3, SCREEN_HEIGHT - 175))
                 self.display_surface.blit(error_text_surf, error_text_rect)

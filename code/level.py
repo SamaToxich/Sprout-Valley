@@ -1,3 +1,4 @@
+from timer import Timer
 from shop import Shop
 from support import *
 from settings import *
@@ -7,6 +8,7 @@ from random import randint
 from soil import SoilLayer
 from overlay import Overlay
 from esc_menu import EscMenu
+from inventory import Inventory
 from start_menu import StartMenu
 from transition import Transition
 from pytmx.util_pygame import load_pygame
@@ -16,6 +18,7 @@ from sprites import Generic, WildFlower, Tree, Interaction, Particle, Collision
 class Level:
     def __init__(self):
         # get the display surface
+        self.timer = Timer(250)
         self.display_surface = pygame.display.get_surface()
 
         # sprite groups
@@ -29,6 +32,10 @@ class Level:
         self.overlay = Overlay(self.player)
         self.transition = Transition(self.reset, self.player)
 
+        # Инвентарь
+        self.inventory = Inventory(self.player, self.toggle_inventory)
+        self.inventory_active = False
+
         # sky
         self.rain = Rain(self.all_sprites)
         self.raining = randint(0, 10) > 10
@@ -37,11 +44,12 @@ class Level:
 
         # start menu
         self.start_menu = StartMenu(self.toggle_start_menu)
-        self.start_menu_active = True
+        self.start_menu_active = False
 
         # esc menu
         self.esc_menu = EscMenu(self.player, self.toggle_esc_menu)
         self.esc_menu_active = False
+        self.menu_cooldown = Timer(250)
 
         # shop
         self.shop_menu = Shop(self.player, self.toggle_shop)
@@ -89,26 +97,11 @@ class Level:
             WildFlower((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites])
 
         # Collision tiles
-        for x, y, surf in tmx_data.get_layer_by_name('Collision').tiles():
-            Collision('Collision', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
-                      self.collision_sprites)
-        for x, y, surf in tmx_data.get_layer_by_name('Collision up').tiles():
-            Collision('Collision up', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
-                      self.collision_sprites)
-        for x, y, surf in tmx_data.get_layer_by_name('Collision down').tiles():
-            Collision('Collision down', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
-                      self.collision_sprites)
-        for x, y, surf in tmx_data.get_layer_by_name('Collision right').tiles():
-            Collision('Collision right', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
-                      self.collision_sprites)
-        for x, y, surf in tmx_data.get_layer_by_name('Collision left').tiles():
-            Collision('Collision left', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
-                      self.collision_sprites)
-        for x, y, surf in tmx_data.get_layer_by_name('Collision corner').tiles():
-            Collision('Collision corner', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),
-                      self.collision_sprites)
+        for i in collision_list:
+            for x, y, surf in tmx_data.get_layer_by_name(f'{i}').tiles():
+                Collision(f'{i}', (x * TILE_SIZE, y * TILE_SIZE), pygame.Surface((TILE_SIZE, TILE_SIZE)),self.collision_sprites)
 
-        # Player
+        # Player, bed, trader
         for obj in tmx_data.get_layer_by_name('Player'):
             if obj.name == 'Start':
                 self.player = Player(
@@ -119,7 +112,8 @@ class Level:
                     interaction=self.interaction_sprites,
                     soil_layer=self.soil_layer,
                     toggle_shop=self.toggle_shop,
-                    start_menu=self.toggle_esc_menu)
+                    start_menu=self.toggle_esc_menu,
+                    toggle_inventory=self.toggle_inventory)
 
             if obj.name == 'Bed':
                 Interaction((obj.x, obj.y), (obj.width, obj.height), self.interaction_sprites, obj.name)
@@ -128,12 +122,7 @@ class Level:
                 Interaction((obj.x, obj.y), (obj.width, obj.height), self.interaction_sprites, obj.name)
 
         # Ground
-        Generic(
-            pos=(0, 0),
-            surf=pygame.image.load('../graphics/world/ground.png').convert_alpha(),
-            groups=self.all_sprites,
-            z=LAYERS['ground']
-        )
+        Generic(pos=(0, 0),surf=pygame.image.load('../graphics/world/ground.png').convert_alpha(),groups=self.all_sprites,z=LAYERS['ground'])
 
     def player_add(self, item, cnt=1):
         self.player.item_inventory[item] += cnt
@@ -141,9 +130,15 @@ class Level:
 
     def toggle_esc_menu(self):
         self.esc_menu_active = not self.esc_menu_active
+        self.menu_cooldown.activate()
 
     def toggle_shop(self):
         self.shop_active = not self.shop_active
+        self.menu_cooldown.activate()
+
+    def toggle_inventory(self):
+        self.inventory_active = not self.inventory_active
+        self.menu_cooldown.activate()
 
     def toggle_start_menu(self):
         self.start_menu_active = not self.start_menu_active
@@ -168,7 +163,8 @@ class Level:
         for tree in self.tree_sprites.sprites():
             for apple in tree.apple_sprites.sprites():
                 apple.kill()
-            tree.create_fruit()
+            if tree.alive:
+                tree.create_fruit()
 
         # sky
         self.sky.start_color = [255, 255, 255]
@@ -206,6 +202,7 @@ class Level:
             self.music.set_volume(SOUND_VOLUME['Music'])
             self.soil_layer.hoe_sound.set_volume(SOUND_VOLUME['Hoe'])
             self.soil_layer.plant_sound.set_volume(SOUND_VOLUME['Plant'])
+            self.player.axe_sound.set_volume(SOUND_VOLUME['Axe'])
 
         else:
             # sprites
@@ -221,6 +218,8 @@ class Level:
 
             # overlay
             self.overlay.display()
+            if self.inventory_active:
+                self.inventory.update()
 
             # transition overlay
             if self.player.sleep:

@@ -163,7 +163,8 @@ class SoilLayer:
                 self.grid[y][x].remove('X')
 
                 for sprite in self.soil_sprites.sprites():
-                    sprite.kill()
+                    if sprite.rect.x == x * TILE_SIZE and sprite.rect.y == y * TILE_SIZE:
+                        sprite.kill()
 
     def check_watered(self, pos):
         x = pos[0] // TILE_SIZE

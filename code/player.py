@@ -5,12 +5,15 @@ from timer import Timer
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, group, collision_sprites, tree_sprites, interaction, soil_layer, toggle_shop, start_menu):
+    def __init__(self, pos, group, collision_sprites, tree_sprites, interaction, soil_layer, toggle_shop, start_menu, toggle_inventory):
         super().__init__(group)
 
         self.import_assets()
         self.status = 'down_idle'
         self.frame_index = 0
+
+        # Инвентарь
+        self.toggle_inventory = toggle_inventory
 
         # general setup
         self.image = self.animations[self.status][self.frame_index]
@@ -28,13 +31,15 @@ class Player(pygame.sprite.Sprite):
 
         # timers
         self.timers = {
-            'water use': Timer(950, self.use_tool),
-            'axe use': Timer(700, self.use_tool),
-            'hoe use': Timer(700, self.use_tool),
+            'water use': Timer(850, self.use_tool),
+            'axe use': Timer(600, self.use_tool),
+            'hoe use': Timer(600, self.use_tool),
             'tool switch': Timer(200),
             'seed use': Timer(300, self.use_seed),
-            'seed switch': Timer(200)
+            'seed switch': Timer(200),
+            'ESC timer': Timer(200),
         }
+
 
         # tools
         self.tools = ['hoe', 'axe', 'water']
@@ -62,6 +67,8 @@ class Player(pygame.sprite.Sprite):
         self.start_menu = start_menu
 
         # sound
+        self.axe_sound = pygame.mixer.Sound('../audio/axe.mp3')
+        self.axe_sound.set_volume(SOUND_VOLUME['Axe'])
         self.switch = pygame.mixer.Sound('../audio/switch_tool1.mp3')
         self.switch.set_volume(SOUND_VOLUME['Switch tool'])
         self.watering = pygame.mixer.Sound('../audio/water.mp3')
@@ -100,7 +107,8 @@ class Player(pygame.sprite.Sprite):
         if self.selected_tool == 'axe':
             for tree in self.tree_sprites.sprites():
                 if tree.rect.collidepoint(self.target_pos) and tree.alive:
-                    tree.damage()
+                    if hasattr(tree, 'damage'):
+                        tree.damage()
 
         if self.selected_tool == 'water':
             self.soil_layer.water(self.target_pos)
@@ -184,6 +192,11 @@ class Player(pygame.sprite.Sprite):
                     self.timers['hoe use'].activate()
                 elif self.selected_tool == 'axe':
                     self.timers['axe use'].activate()
+                    self.soil_layer.get_hit(self.target_pos)
+                    for tree in self.tree_sprites.sprites():
+                        if tree.rect.collidepoint(self.target_pos) and tree.alive:
+                            self.axe_sound.play()
+
                 self.direction = pygame.math.Vector2()
                 self.frame_index = 0
                 self.wave.play()
@@ -254,6 +267,10 @@ class Player(pygame.sprite.Sprite):
                 self.direction = pygame.math.Vector2()
                 self.frame_index = 0
 
+            if keys[pygame.K_i] and not self.timers['tool switch'].active:
+                self.toggle_inventory()
+                self.timers['tool switch'].activate()
+
             # shop
             if keys[pygame.K_f]:
                 collided_interaction_sprite = pygame.sprite.spritecollide(self, self.interaction, False)
@@ -268,8 +285,10 @@ class Player(pygame.sprite.Sprite):
 
             # menu
             if keys[pygame.K_ESCAPE]:
-                self.start_menu()
-                self.choice.play()
+                if not self.timers['ESC timer'].active:
+                    self.start_menu()
+                    self.choice.play()
+                    self.timers['ESC timer'].activate()
 
     def get_status(self):
         # idle
