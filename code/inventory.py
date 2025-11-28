@@ -16,9 +16,6 @@ class Inventory:
         # Создаем элементы инвентаря программно
         self.create_inventory_elements()
 
-        # Таймер для обработки ввода
-        self.timer = Timer(200)
-
     def create_inventory_elements(self):
         # Создаем фон инвентаря - упрощенная версия без градиента
         self.bg_surf = pygame.Surface((450, 550), pygame.SRCALPHA)
@@ -36,14 +33,6 @@ class Inventory:
         self.slot_surf.fill((60, 60, 60, 180))
         # Рисуем рамку слота
         pygame.draw.rect(self.slot_surf, (139, 69, 19, 255), (0, 0, 70, 70), 2, border_radius=8)
-
-    def input(self):
-        keys = pygame.key.get_pressed()
-
-        if not self.timer.active:
-            if keys[pygame.K_i] or keys[pygame.K_ESCAPE]:
-                self.toggle_inventory()
-                self.timer.activate()
 
     def draw_inventory(self):
         # Отображаем фон инвентаря
@@ -98,8 +87,7 @@ class Inventory:
             self.display_surface.blit(self.slot_surf, slot_rect)
 
             # Отображаем название предмета
-            display_name = self.get_display_name(item_name)
-            name_surf = self.item_font.render(display_name, True, '#ffffff')
+            name_surf = self.item_font.render(item_name, True, '#ffffff')
             name_rect = name_surf.get_rect(center=(slot_rect.centerx, slot_rect.centery - 8))
             self.display_surface.blit(name_surf, name_rect)
 
@@ -114,22 +102,5 @@ class Inventory:
             dots_rect = dots_surf.get_rect(topleft=(start_x, start_y + max_rows * 80 + 5))
             self.display_surface.blit(dots_surf, dots_rect)
 
-    def get_display_name(self, item_name):
-        # Сокращаем длинные названия для лучшего отображения
-        names = {
-            'wood': 'Wood',
-            'apple': 'Apple',
-            'corn': 'Corn',
-            'tomato': 'Tomato',
-            'cabbage': 'Cabbage',
-            'carrot': 'Carrot',
-            'pumpkin': 'Pumpkin',
-            'turnip': 'Turnip',
-            'zucchini': 'Zucchini',
-            'cucumber': 'Cucumber'
-        }
-        return names.get(item_name, item_name.capitalize())
-
     def update(self):
-        self.input()
         self.draw_inventory()

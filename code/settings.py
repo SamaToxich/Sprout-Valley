@@ -1,9 +1,63 @@
 from pygame.math import Vector2
+import pygame
 
 # screen
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 TILE_SIZE = 64
+
+# player move
+keys_value_list = {
+    'up':           'W',
+    'down':         'S',
+    'left':         'A',
+    'right':        'D',
+    'plant':        'E',
+    'interaction':  'F',
+    'inventory':    'I',
+    'switch tool':  'TAB',
+    'run':          'LSHIFT',
+    'use':          'SPACE',
+    'esc':          'ESCAPE',
+    'accept':       'RETURN',
+    'seed_1':       '1',
+    'seed_2':       '2',
+    'seed_3':       '3',
+    'seed_4':       '4',
+    'seed_5':       '5',
+    'seed_6':       '6',
+    'seed_7':       '7',
+    'seed_8':       '8',
+        }
+keys_value = {
+            'W':            'pygame.K_w',
+            'S':            'pygame.K_s',
+            'A':            'pygame.K_a',
+            'D':            'pygame.K_d',
+            'F':            'pygame.K_f',
+            'Q':            'pygame.K_q',
+            'E':            'pygame.K_e',
+            '1':            'pygame.K_1',
+            '2':            'pygame.K_2',
+            '3':            'pygame.K_3',
+            '4':            'pygame.K_4',
+            '5':            'pygame.K_5',
+            '6':            'pygame.K_6',
+            '7':            'pygame.K_7',
+            '8':            'pygame.K_8',
+            'LSHIFT':       'pygame.K_LSHIFT',
+            'SPACE':        'pygame.K_SPACE',
+            'RETURN':       'pygame.K_RETURN',
+            'ESCAPE':       'pygame.K_ESCAPE',
+            'BACKSPACE':    'pygame.K_BACKSPACE',
+            'TAB':          'pygame.K_TAB',
+            'UP':           'pygame.K_UP',
+            'DOWN':         'pygame.K_DOWN',
+            'LEFT':         'pygame.K_LEFT',
+            'RIGHT':        'pygame.K_RIGHT',
+            'LCTRL':        'pygame.K_LCTRL'
+        }
+
 
 # volume - теперь загружается из сохранения
 SOUND_VOLUME = {
@@ -19,7 +73,7 @@ SOUND_VOLUME = {
     'Switch tool':  0.2,
     'Bye or Sell':  0.1,
     'Music':        0.0,
-    'Rain':         1
+    'Rain':         0.5
 }
 
 # general colors
@@ -41,7 +95,7 @@ UPGRADE_BG_COLOR_SELECTED = '#EEEEEE'
 
 ALL_OPTIONS = {
     'options': ['Play', 'Options', 'Exit'],
-    'in_options': ['Volume', 'Input', 'Op'],
+    'in_options': ['Volume'],
     'volume': ['Tools', 'Affects', 'Music'],
 }
 

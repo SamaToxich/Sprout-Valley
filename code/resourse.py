@@ -18,10 +18,11 @@ sound_list = {
     'Rain':         pygame.mixer.Sound('../audio/rain.mp3'),
 }
 
-def sound_volume(sound, volume):
+def update_sound_volume(sound, volume):
     sound.set_volume(volume)
+    SOUND_VOLUME[sound] = volume
 
-def all_sound_volume(sound_list_update):
+def update_all_sound_volume(sound_list_update):
     for sound, volume in sound_list_update.items():
         if sound in sound_list.keys():
             sound_list[sound].set_volume(volume)

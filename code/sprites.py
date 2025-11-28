@@ -97,7 +97,7 @@ class Tree(Generic):
         self.days_to_resurrect = 3  # дней до воскрешения
 
     def damage(self):
-        if self.alive:
+        if self.alive and self.health > 0:
             # damaging the tree
             self.health -= 1
 

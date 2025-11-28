@@ -126,10 +126,6 @@ class Shop:
         else:
             self.index_inventory = 'none'
 
-        if keys[pygame.K_ESCAPE] and not self.timer.active:
-            self.player.toggle_shop()
-            self.timer.activate()
-
         if keys[pygame.K_BACKSPACE]:
             self.toggle_menu()
 
@@ -180,6 +176,7 @@ class Shop:
 
             # Отображаем текст
             self.display_surface.blit(count_surf, count_rect)
+
     def update(self):
         self.draw_back()
         self.input()

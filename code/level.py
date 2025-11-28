@@ -6,6 +6,7 @@ from settings import *
 from sky import Rain, Sky
 from player import Player
 from random import randint
+from input import Input
 from soil import SoilLayer, Plant
 from overlay import Overlay
 from esc_menu import EscMenu
@@ -33,16 +34,13 @@ class Level:
 
         # Система сохранения
         self.save_system = SaveSystem()
+
         self.setup()
         self.overlay = Overlay(self.player)
         self.transition = Transition(self.reset, self.player)
 
         # Day tracking system
         self.current_day = 1
-
-        # Инвентарь
-        self.inventory = Inventory(self.player, self.toggle_inventory)
-        self.inventory_active = False
 
         # sky
         self.rain = Rain(self.all_sprites)
@@ -52,16 +50,19 @@ class Level:
 
         # start menu
         self.start_menu = StartMenu(self.toggle_start_menu)
-        self.start_menu_active = False
+        self.start_menu_active = True
 
         # esc menu
         self.esc_menu = EscMenu(self.player, self.toggle_esc_menu)
         self.esc_menu_active = False
-        self.menu_cooldown = Timer(250)
 
         # shop
         self.shop_menu = Shop(self.player, self.toggle_shop)
         self.shop_active = False
+
+        # Инвентарь
+        self.inventory = Inventory(self.player, self.toggle_inventory)
+        self.inventory_active = False
 
         # import
         self.cursor_surf = sprite_list['cursor']
@@ -74,6 +75,9 @@ class Level:
 
         # Загрузка сохранения
         self.load_game()
+
+        # Регистрация действий
+        self.input = Input(self)
 
     def load_game(self):
         """Загружает сохранение игры"""
@@ -158,7 +162,7 @@ class Level:
             # Загрузка громкости аудио
             volume_data = save_data['audio']
             SOUND_VOLUME = volume_data
-            all_sound_volume(SOUND_VOLUME)
+            update_all_sound_volume(SOUND_VOLUME)
 
     def save_game(self):
         """Сохраняет игру"""
@@ -209,7 +213,7 @@ class Level:
                     interaction=self.interaction_sprites,
                     soil_layer=self.soil_layer,
                     toggle_shop=self.toggle_shop,
-                    start_menu=self.toggle_esc_menu,
+                    esc_menu=self.toggle_esc_menu,
                     toggle_inventory=self.toggle_inventory)
 
             if obj.name == 'Bed':
@@ -236,15 +240,12 @@ class Level:
 
     def toggle_esc_menu(self):
         self.esc_menu_active = not self.esc_menu_active
-        self.menu_cooldown.activate()
 
     def toggle_shop(self):
         self.shop_active = not self.shop_active
-        self.menu_cooldown.activate()
 
     def toggle_inventory(self):
         self.inventory_active = not self.inventory_active
-        self.menu_cooldown.activate()
 
     def toggle_start_menu(self):
         self.start_menu_active = not self.start_menu_active
@@ -305,6 +306,7 @@ class Level:
         self.display_surface.fill('black')
         self.all_sprites.custom_draw(self.player)
         self.sky.display()
+        self.input.update()
 
         # updates
         if self.start_menu_active:

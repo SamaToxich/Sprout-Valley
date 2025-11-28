@@ -141,7 +141,7 @@ class Overlay:
 
         # select slot
         select_slot_rect = self.select_slot.get_rect(
-            center=((SCREEN_WIDTH // 2 - 67 * 4 + (self.player.seed_select_index * 76)), SCREEN_HEIGHT - 84))
+            center=((SCREEN_WIDTH // 2 - 67 * 4 + (self.player.seed_index * 76)), SCREEN_HEIGHT - 84))
         self.display_surface.blit(self.select_slot, select_slot_rect)
 
         # seeds
