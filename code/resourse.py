@@ -63,6 +63,7 @@ sprite_list = {
     'zucchini':             pygame.image.load(f'../graphics/overlay/zucchini.png').convert_alpha(),
     'cucumber':             pygame.image.load(f'../graphics/overlay/cucumber.png').convert_alpha(),
     'apple':                pygame.image.load(f'../graphics/fruit/apple.png').convert_alpha(),
+    'inventory':            pygame.image.load(f'../graphics/overlay/full_inventory.png').convert_alpha(),
 
 }
 

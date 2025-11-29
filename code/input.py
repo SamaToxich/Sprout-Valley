@@ -99,6 +99,7 @@ class Input:
                         self.key_states[key_name]['pressed'] = False
                         break
 
+    # Обработка ввода
     def get_input(self):
         KEYS = pygame.key.get_pressed()
 
@@ -379,6 +380,13 @@ class Input:
                                     self.timers['input_timer_150'].activate()
                                     break
 
+        # ---------------------------------------МЕНЮ МАГАЗИНА---------------------------------------
+
+        elif self.menus_active['shop_menu'] and not self.timers['input_timer_250'].active:
+            if self.key_states[keys_value_list['esc']]['pressed']:
+                self.level.toggle_shop()
+                self.timers['input_timer_250'].activate()
+
         # ---------------------------------------ИНВЕНТАРЬ---------------------------------------
 
         # Инвентарь
@@ -391,7 +399,7 @@ class Input:
         # Магазин и кровать
         if KEYS[self.keys_pygame[keys_value_list['interaction']]] and self.check_menus_active_without_target() and not self.timers['input_timer_250'].active:
             collided_interaction_sprite = pygame.sprite.spritecollide(self.player, self.player.interaction, False)
-
+            #self.player.toggle_shop() # !!! ДЛЯ ОТЛАДКИ МАГАЗИНА !!! УБРАТЬ
             if collided_interaction_sprite and self.check_menus_active_without_target():
                 if collided_interaction_sprite[0].name == 'Trader':
                     self.player.toggle_shop()
@@ -403,7 +411,7 @@ class Input:
         # ---------------------------------------ВЫЗОВ ESC МЕНЮ---------------------------------------
 
         # Esc меню
-        if self.key_states[keys_value_list['esc']]['pressed'] and self.check_menus_active_without_target() and not self.timers['input_timer_250'].active:
+        if self.key_states[keys_value_list['esc']]['pressed'] and self.check_menus_active_without_target('inventory_menu') and not self.timers['input_timer_250'].active:
             self.player.esc_menu()
             self.timers['input_timer_250'].activate()
 

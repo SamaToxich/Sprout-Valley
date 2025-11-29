@@ -50,7 +50,7 @@ class Level:
 
         # start menu
         self.start_menu = StartMenu(self.toggle_start_menu)
-        self.start_menu_active = True
+        self.start_menu_active = False
 
         # esc menu
         self.esc_menu = EscMenu(self.player, self.toggle_esc_menu)

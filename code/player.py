@@ -1,6 +1,4 @@
 from support import *
-from settings import *
-from timer import Timer
 from resourse import *
 
 
@@ -8,7 +6,22 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos, group, collision_sprites, tree_sprites, interaction, soil_layer, toggle_shop, esc_menu, toggle_inventory):
         super().__init__(group)
 
-        self.import_assets()
+        # Словарь для анимаций
+        self.animations = {
+            'up': [], 'down': [], 'left': [], 'right': [],
+            'right_idle':    [], 'left_idle':    [], 'up_idle':  [], 'down_idle':    [],
+            'right_run':     [], 'left_run':     [], 'up_run':   [], 'down_run':     [],
+            'right_hoe':     [], 'left_hoe':     [], 'up_hoe':   [], 'down_hoe':     [],
+            'right_axe':     [], 'left_axe':     [], 'up_axe':   [], 'down_axe':     [],
+            'right_water':   [], 'left_water':   [], 'up_water': [], 'down_water':   []
+                           }
+
+        # Импорт анимаций
+        for animation in self.animations.keys():
+            full_path = '../graphics/character/' + animation
+            self.animations[animation] = import_folder(full_path)
+
+        # Статус и индекс кадра анимации
         self.status = 'down_idle'
         self.frame_index = 0
 
@@ -29,18 +42,9 @@ class Player(pygame.sprite.Sprite):
         self.hitbox = self.rect.copy().inflate((-126, -70))
         self.collision_sprite = collision_sprites
 
-        # timers
-        self.timers = {
-            'water use': Timer(850, self.use_tool),
-            'axe use': Timer(600, self.use_tool),
-            'hoe use': Timer(600, self.use_tool),
-            'tool switch': Timer(200),
-            'seed use': Timer(300, self.use_seed),
-            'seed switch': Timer(200),
-            'ESC timer': Timer(200),
-        }
 
         # tools
+        self.target_pos = None
         self.tools = ['hoe', 'axe', 'water']
         self.tool_index = 1
         self.selected_tool = self.tools[self.tool_index]
@@ -98,28 +102,12 @@ class Player(pygame.sprite.Sprite):
         if self.seed_inventory[self.selected_seed] > 0:
             self.soil_layer.plant_seed(target_pos, self.selected_seed, self.seed_inventory, self.selected_seed)
 
-    def import_assets(self):
-        self.animations = {'up': [], 'down': [], 'left': [], 'right': [],
-                           'right_idle': [], 'left_idle': [], 'up_idle': [], 'down_idle': [],
-                           'right_run': [], 'left_run': [], 'up_run': [], 'down_run': [],
-                           'right_hoe': [], 'left_hoe': [], 'up_hoe': [], 'down_hoe': [],
-                           'right_axe': [], 'left_axe': [], 'up_axe': [], 'down_axe': [],
-                           'right_water': [], 'left_water': [], 'up_water': [], 'down_water': []}
-
-        for animation in self.animations.keys():
-            full_path = '../graphics/character/' + animation
-            self.animations[animation] = import_folder(full_path)
-
     def animate(self, dt):
         self.frame_index += 9 * dt
         if self.frame_index >= len(self.animations[self.status]):
             self.frame_index = 0
 
         self.image = self.animations[self.status][int(self.frame_index)]
-
-    def update_timer(self):
-        for timer in self.timers.values():
-            timer.update()
 
     def collision(self, direction):
         for sprite in self.collision_sprite.sprites():
@@ -158,11 +146,6 @@ class Player(pygame.sprite.Sprite):
         self.collision('vertical')
 
     def update(self, dt):
-        self.update_timer()
         self.get_target_pos()
-
         self.move(dt)
         self.animate(dt)
-
-        self.watering.set_volume(SOUND_VOLUME['Water'])
-        self.switch.set_volume(SOUND_VOLUME['Switch tool'])

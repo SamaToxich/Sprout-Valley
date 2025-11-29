@@ -103,11 +103,9 @@ class EscMenu:
 
         if SOUND_VOLUME[current_item] <= 0:
             if current_item == 'Tools':
-                SOUND_VOLUME['Tools'] = SOUND_VOLUME['Axe'] = SOUND_VOLUME['Water'] = SOUND_VOLUME['Hoe'] = \
-                SOUND_VOLUME['Plant'] = SOUND_VOLUME['Wave'] = 0.0
+                SOUND_VOLUME['Tools'] = SOUND_VOLUME['Axe'] = SOUND_VOLUME['Water'] = SOUND_VOLUME['Hoe'] = SOUND_VOLUME['Plant'] = SOUND_VOLUME['Wave'] = 0.0
             elif current_item == 'Affects':
-                SOUND_VOLUME['Affects'] = SOUND_VOLUME['Choice'] = SOUND_VOLUME['Success'] = SOUND_VOLUME[
-                    'Switch tool'] = SOUND_VOLUME['Bye or Sell'] = SOUND_VOLUME['Rain'] = 0.0
+                SOUND_VOLUME['Affects'] = SOUND_VOLUME['Choice'] = SOUND_VOLUME['Success'] = SOUND_VOLUME['Switch tool'] = SOUND_VOLUME['Bye or Sell'] = SOUND_VOLUME['Rain'] = 0.0
             else:
                 SOUND_VOLUME[current_item] = 0.0
 
@@ -135,12 +133,14 @@ class EscMenu:
                 SOUND_VOLUME['Success'] += 0.1
                 SOUND_VOLUME['Switch tool'] += 0.2
                 SOUND_VOLUME['Bye or Sell'] += 0.1
+                SOUND_VOLUME['Rain'] += 0.3
             else:
                 SOUND_VOLUME['Affects'] += 0.1
                 SOUND_VOLUME['Choice'] += 0.03
                 SOUND_VOLUME['Success'] += 0.1
                 SOUND_VOLUME['Switch tool'] += 0.1
                 SOUND_VOLUME['Bye or Sell'] += 0.1
+                SOUND_VOLUME['Rain'] += 0.1
 
         else:
             SOUND_VOLUME[current_item] += 0.1
@@ -152,8 +152,7 @@ class EscMenu:
                 SOUND_VOLUME['Hoe'] = 1.3
                 SOUND_VOLUME['Plant'] = 1.5
             elif current_item == 'Affects':
-                SOUND_VOLUME['Affects'] = SOUND_VOLUME['Success'] = SOUND_VOLUME['Bye or Sell'] = SOUND_VOLUME[
-                    'Switch tool'] = 1
+                SOUND_VOLUME['Affects'] = SOUND_VOLUME['Success'] = SOUND_VOLUME['Bye or Sell'] = SOUND_VOLUME['Switch tool'] = 1
                 SOUND_VOLUME['Choice'] = 0.33
             else:
                 SOUND_VOLUME[current_item] = 1
@@ -161,4 +160,3 @@ class EscMenu:
     def update(self):
         self.display_surface.blit(self.background_setting_surf, self.background_setting_rect)
         self.draw_menu(self.current_option)
-        print(self.index)

@@ -19,11 +19,6 @@ class Shop:
         self.select_surf = sprite_list['select']
         self.back_text_surf = sprite_list['back_text']
 
-        # options
-        self.width = 400
-        self.space = 10
-        self.padding = 8
-
         # entries
         self.seed = list(self.player.seed_inventory.keys())
         self.inventory = list(self.player.item_inventory.keys())
@@ -45,89 +40,17 @@ class Shop:
     def input(self):
         keys = pygame.key.get_pressed()
         mouse_pos = pygame.mouse.get_pos()
-        self.timer.update()
 
         # Сбрасываем отображение количества
         self.show_count = False
 
-        if self.shop_rect.collidepoint(mouse_pos):
-            for i in range(4):
-                for j in range(5):
-                    start_pos_x = 60
-                    start_pos_y = SCREEN_HEIGHT // 2.81
-                    if start_pos_x + 70 * i + 12 * i <= mouse_pos[0] <= start_pos_x + 70 * (i + 1) + 12 * i and\
-                            start_pos_y + 70 * j + 12 * j <= mouse_pos[1] <= start_pos_y + 70 * (j + 1) + 12 * j:
+        # ----------------------------------ОБВОДКА И ПОКУПКА В МАГАЗИНЕ----------------------------------
 
-                        select_rect = self.select_surf.get_rect(topleft=(start_pos_x + 70 * i + 12 * i, start_pos_y + 70 * j + 12 * j))
-                        self.display_surface.blit(self.select_surf, select_rect)
+        # Обработка магазина покупок
+        self.handle_buy_shop(mouse_pos, keys)
 
-                        # index seed
-                        if j < 2:
-                            self.index_shop = i + j * 4
-                            # Устанавливаем данные для отображения количества
-                            if self.index_shop < len(self.seed):
-                                self.show_count = True
-                                self.current_item_name = self.seed[self.index_shop]
-                                self.current_item_count = self.player.seed_inventory[self.current_item_name]
-                                self.current_item_type = 'seed'
-                        else:
-                            self.index_shop = 'none'
-
-                        # buy
-                        if keys[pygame.K_SPACE] and self.index_shop != 'none' and not self.timer.active:
-                            if  self.player.money > PURCHASE_PRICES[self.seed[self.index_shop]]:
-
-                                self.player.money -= PURCHASE_PRICES[self.seed[self.index_shop]]
-                                self.player.seed_inventory[self.seed[self.index_shop]] += 1
-                                self.buy_sell.play()
-                                self.timer.activate()
-        else:
-            self.index_shop = 'none'
-
-        if self.inventory_rect.collidepoint(mouse_pos):
-            for i in range(4):
-                for j in range(5):
-                    start_pos_x = SCREEN_WIDTH - 381
-                    start_pos_y = SCREEN_HEIGHT // 2.81
-                    if start_pos_x + 70 * i + 12 * i <= mouse_pos[0] <= start_pos_x + 70 * (i + 1) + 12 * i and\
-                            start_pos_y + 70 * j + 12 * j <= mouse_pos[1] <= start_pos_y + 70 * (j + 1) + 12 * j:
-
-                        select_rect = self.select_surf.get_rect(topleft=(start_pos_x + 70 * i + 12 * i, start_pos_y + 70 * j + 12 * j))
-                        self.display_surface.blit(self.select_surf, select_rect)
-
-                        # index inventory
-                        if j < 2:
-                            self.index_inventory = i + j * 4
-                            # Устанавливаем данные для отображения количества
-                            if self.index_inventory < len(self.inventory):
-                                self.show_count = True
-                                self.current_item_name = self.inventory[self.index_inventory]
-                                self.current_item_count = self.player.item_inventory[self.current_item_name]
-                                self.current_item_type = 'item'
-                        elif j == 2 and i < 2:
-                            self.index_inventory = i + j * 4
-                            # Устанавливаем данные для отображения количества
-                            if self.index_inventory < len(self.inventory):
-                                self.show_count = True
-                                self.current_item_name = self.inventory[self.index_inventory]
-                                self.current_item_count = self.player.item_inventory[self.current_item_name]
-                                self.current_item_type = 'item'
-                        else:
-                            self.index_inventory = 'none'
-
-                        # sell
-                        if keys[pygame.K_SPACE] and self.index_inventory != 'none' and not self.timer.active:
-                            if self.player.item_inventory[self.inventory[self.index_inventory]] > 0:
-
-                                self.player.money += SALE_PRICES[self.inventory[self.index_inventory]]
-                                self.player.item_inventory[self.inventory[self.index_inventory]] -= 1
-                                self.buy_sell.play()
-                                self.timer.activate()
-        else:
-            self.index_inventory = 'none'
-
-        if keys[pygame.K_BACKSPACE]:
-            self.toggle_menu()
+        # Обработка магазина продаж
+        self.handle_sell_shop(mouse_pos, keys)
 
     def draw_back(self):
         # background
@@ -177,10 +100,110 @@ class Shop:
             # Отображаем текст
             self.display_surface.blit(count_surf, count_rect)
 
+    def handle_buy_shop(self, mouse_pos, keys):
+        """Обрабатывает магазин покупок"""
+        if self.shop_rect.collidepoint(mouse_pos):
+            i, j = self.get_cell_indices(mouse_pos, self.shop_rect)
+
+            if i is not None and j is not None:
+                self.draw_selection(i, j, self.shop_rect)
+                self.handle_buy_selection(i, j)
+                self.handle_buy_action(keys)
+        else:
+            self.index_shop = 'none'
+
+    def handle_sell_shop(self, mouse_pos, keys):
+        """Обрабатывает магазин продаж"""
+        if self.inventory_rect.collidepoint(mouse_pos):
+            i, j = self.get_cell_indices(mouse_pos, self.inventory_rect)
+
+            if i is not None and j is not None:
+                self.draw_selection(i, j, self.inventory_rect)
+                self.handle_sell_selection(i, j)
+                self.handle_sell_action(keys)
+        else:
+            self.index_inventory = 'none'
+
+    # Общие вспомогательные методы
+    def get_cell_indices(self, mouse_pos, rect):
+        """Возвращает индексы ячейки по позиции мыши"""
+        rel_x = mouse_pos[0] - rect.left - 30
+        rel_y = mouse_pos[1] - rect.top - 30
+
+        cell_size = 70 + 12  # размер ячейки + отступ
+        i = rel_x // cell_size
+        j = rel_y // cell_size
+
+        return (i, j) if 0 <= i < 4 and 0 <= j < 5 else (None, None)
+
+    def draw_selection(self, i, j, rect):
+        """Отрисовывает выделение на ячейке"""
+        cell_size = 70 + 12
+        select_x = rect.left + i * cell_size + 30
+        select_y = rect.top + j * cell_size + 30
+        select_rect = self.select_surf.get_rect(topleft=(select_x, select_y))
+        self.display_surface.blit(self.select_surf, select_rect)
+
+    # Методы для покупок
+    def handle_buy_selection(self, i, j):
+        """Обрабатывает выбор в магазине покупок"""
+        if j < 2:  # Только первые 2 строки для покупок
+            self.index_shop = i + j * 4
+            if self.index_shop < len(self.seed):
+                self.set_item_display_data(self.seed[self.index_shop], self.player.seed_inventory, 'seed')
+            else:
+                self.index_shop = 'none'
+        else:
+            self.index_shop = 'none'
+
+    def handle_buy_action(self, keys):
+        """Обрабатывает действие покупки"""
+        if (keys[pygame.K_SPACE] and self.index_shop != 'none' and not self.timer.active):
+
+            item_name = self.seed[self.index_shop]
+            price = PURCHASE_PRICES[item_name]
+
+            if self.player.money >= price:
+                self.player.money -= price
+                self.player.seed_inventory[item_name] += 1
+                self.buy_sell.play()
+                self.timer.activate()
+
+    # Методы для продаж
+    def handle_sell_selection(self, i, j):
+        """Обрабатывает выбор в магазине продаж"""
+        if j < 2 or (j == 2 and i < 2):  # Первые 2 строки + 2 ячейки в 3-й строке
+            self.index_inventory = i + j * 4
+            if self.index_inventory < len(self.inventory):
+                self.set_item_display_data(self.inventory[self.index_inventory], self.player.item_inventory, 'item')
+            else:
+                self.index_inventory = 'none'
+        else:
+            self.index_inventory = 'none'
+
+    def handle_sell_action(self, keys):
+        """Обрабатывает действие продажи"""
+        if (keys[pygame.K_SPACE] and self.index_inventory != 'none' and not self.timer.active):
+
+            item_name = self.inventory[self.index_inventory]
+
+            if self.player.item_inventory[item_name] > 0:
+                self.player.money += SALE_PRICES[item_name]
+                self.player.item_inventory[item_name] -= 1
+                self.buy_sell.play()
+                self.timer.activate()
+
+    # Общий метод для отображения данных
+    def set_item_display_data(self, item_name, inventory_dict, item_type):
+        """Устанавливает данные для отображения количества"""
+        self.show_count = True
+        self.current_item_name = item_name
+        self.current_item_count = inventory_dict[item_name]
+        self.current_item_type = item_type
+
     def update(self):
         self.draw_back()
         self.input()
+        self.timer.update()
         self.display_money()
         self.display_item_count()
-
-        self.buy_sell.set_volume(SOUND_VOLUME['Bye or Sell'])
